@@ -1,0 +1,2804 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ロックダンス トレーナー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #241629;
+    --panel: #2f1c37;
+    --panel-line: #4a3153;
+    --cream: #f5ede0;
+    --muted: #a891b3;
+    --yellow: #e8a93b;
+    --pink: #e85d9e;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 48px;
+  }
+
+  .app { width: 100%; max-width: 420px; }
+
+  .app-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    margin: 0 0 4px;
+  }
+
+  .app-sub {
+    font-size: 22px;
+    font-weight: 900;
+    margin: 0 0 22px;
+    line-height: 1.4;
+  }
+
+  /* --- Top-level tabs --- */
+  .tab-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 20px;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 14px;
+    padding: 5px;
+  }
+
+  .tab-btn {
+    flex: 1 1 45%;
+    padding: 10px 4px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .tab-btn.active {
+    background: var(--pink);
+    color: var(--bg);
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* --- Motion stage (rhythm tab) --- */
+  .stage {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    margin: 0 auto 20px;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .updown-label {
+    position: absolute;
+    top: 18px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: 'Anton', sans-serif;
+    font-size: 34px;
+    letter-spacing: 0.02em;
+    color: var(--pink);
+    transition: color 0.12s ease;
+  }
+
+  .stage.down .updown-label { color: var(--yellow); }
+
+  .floor-line {
+    position: absolute;
+    left: 30px;
+    right: 30px;
+    bottom: 78px;
+    height: 1px;
+    background: var(--panel-line);
+  }
+
+  .floor-caption {
+    position: absolute;
+    left: 30px;
+    right: 30px;
+    bottom: 60px;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  .mover-track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 78px;
+    height: 130px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .mover-pos { position: relative; width: 64px; display: flex; justify-content: center; }
+
+  .mover {
+    width: 64px;
+    height: 90px;
+    border-radius: 32px;
+    background: var(--pink);
+    transform: translateY(-14px) scaleY(0.86);
+    transform-origin: bottom center;
+  }
+
+  .mover.down { background: var(--yellow); }
+
+  .mover.hit-down { animation-name: hitDown; animation-timing-function: cubic-bezier(.36,.07,.19,.97); animation-fill-mode: forwards; }
+  .mover.hit-up { animation-name: hitUp; animation-timing-function: cubic-bezier(.36,.07,.19,.97); animation-fill-mode: forwards; }
+  .mover.hit-tick-on { animation-name: hitTickOn; animation-timing-function: ease-out; animation-fill-mode: forwards; }
+  .mover.hit-tick-off { animation-name: hitTickOff; animation-timing-function: ease-out; animation-fill-mode: forwards; }
+
+  @keyframes hitDown { 0% { transform: translateY(-14px) scaleY(0.86); } 45% { transform: translateY(-2px) scaleY(0.6); } 100% { transform: translateY(-14px) scaleY(0.86); } }
+  @keyframes hitUp { 0% { transform: translateY(-14px) scaleY(0.86); } 45% { transform: translateY(-46px) scaleY(1.15); } 100% { transform: translateY(-14px) scaleY(0.86); } }
+  @keyframes hitTickOn { 0% { transform: translateY(-14px) scaleY(0.86); } 50% { transform: translateY(-22px) scaleY(0.94); } 100% { transform: translateY(-14px) scaleY(0.86); } }
+  @keyframes hitTickOff { 0% { transform: translateY(-14px) scaleY(0.86); } 50% { transform: translateY(-18px) scaleY(0.90); } 100% { transform: translateY(-14px) scaleY(0.86); } }
+
+  .stage-hint {
+    position: absolute;
+    bottom: 14px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+  }
+
+  .mode-row { display: flex; gap: 8px; margin-bottom: 20px; }
+
+  .mode-btn {
+    flex: 1;
+    padding: 10px 6px;
+    border-radius: 10px;
+    border: 1.5px solid var(--panel-line);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+
+  .mode-btn.active { border-color: var(--pink); color: var(--cream); background: rgba(232, 93, 158, 0.14); }
+
+  .count-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 26px; flex-wrap: wrap; }
+
+  .count-dot {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--panel);
+    border: 1.5px solid var(--panel-line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Anton', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  }
+
+  .count-dot.off-beat { width: 20px; height: 20px; font-size: 11px; align-self: center; opacity: 0.75; }
+  .count-dot.one { border-color: var(--muted); }
+  .count-dot.active { background: var(--pink); border-color: var(--pink); color: var(--bg); transform: translateY(-3px); }
+  .count-dot.active.down { background: var(--yellow); border-color: var(--yellow); }
+
+  /* --- Choreography tab --- */
+  #choreoProgress.count-row { justify-content: center; margin-bottom: 8px; }
+  #choreoProgress .count-dot { width: 22px; height: 22px; font-size: 11px; }
+  #choreoProgress .count-dot.off-beat { width: 16px; height: 16px; font-size: 9.5px; }
+
+  .roadmap { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 4px; }
+  .roadmap-pill {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1.5px solid var(--panel-line);
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .roadmap-pill.current { border-color: var(--pink); color: var(--cream); background: rgba(232, 93, 158, 0.14); }
+  .roadmap-empty { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 14px; }
+
+  .rhythm-badge { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 10px; }
+  .choreo-mover-track { position: relative; width: 64px; height: 100px; display: flex; align-items: flex-end; justify-content: center; }
+  .beat-foot {
+    position: absolute;
+    bottom: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--panel-line);
+    opacity: 0.35;
+    transition: opacity 0.15s ease, background 0.15s ease;
+  }
+  .beat-foot-l { left: -6px; }
+  .beat-foot-r { right: -6px; }
+  .beat-foot.enabled { background: var(--cream); opacity: 0.8; }
+  .beat-foot.bounce { animation: beatFootBounce 0.16s ease-out; }
+  @keyframes beatFootBounce { 0% { transform: translateY(0); } 40% { transform: translateY(-9px); } 100% { transform: translateY(0); } }
+  .rhythm-badge-label {
+    font-family: 'Anton', sans-serif;
+    font-size: 19px;
+    letter-spacing: 0.03em;
+    color: var(--pink);
+  }
+  .rhythm-badge-label.down { color: var(--yellow); }
+  .rhythm-badge-label.sixteen { color: var(--cream); }
+
+  .rhythm-type-row { display: flex; gap: 4px; margin-top: 6px; }
+  .rhythm-type-btn {
+    flex: 1;
+    padding: 4px 2px;
+    border-radius: 7px;
+    border: 1px solid var(--panel-line);
+    background: var(--bg);
+    color: var(--muted);
+    font-size: 10.5px;
+    cursor: pointer;
+  }
+  .rhythm-type-btn.active { border-color: var(--pink); color: var(--cream); background: rgba(232, 93, 158, 0.14); }
+
+  .choreo-stage {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 20px;
+    padding: 16px 16px 14px;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+
+  .choreo-eyebrow { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 6px; }
+
+  .figure-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 10px; margin-bottom: 6px; }
+  .figure-col { display: flex; flex-direction: column; align-items: center; }
+  .figure-svg { width: 78px; height: 106px; }
+  .side-svg { width: 62px; height: 106px; }
+  .foot-svg { width: 78px; height: 78px; }
+  .figure-caption { font-size: 9px; color: var(--muted); margin-top: 2px; letter-spacing: 0.02em; max-width: 78px; text-align: center; }
+
+  .side-svg line { stroke-linecap: round; }
+  .side-svg .side-torso { stroke: var(--cream); stroke-width: 17; }
+  .side-svg .side-head { fill: var(--cream); }
+  .side-svg .side-limb { stroke: var(--muted); stroke-width: 12; }
+  .side-svg .side-limb-fill { fill: var(--muted); }
+  .side-svg .side-cap { fill: var(--yellow); }
+  .side-svg .side-cap-brim { fill: var(--yellow); }
+  .side-svg .side-ponytail { fill: var(--pink); }
+  .side-svg .side-tail { fill: var(--cream); }
+  .side-svg .side-guide { stroke: var(--panel-line); stroke-width: 1; stroke-dasharray: 3 4; }
+  .side-svg .side-dir-label { font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 11px; fill: var(--muted); }
+
+  .notation-preview {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  .notation-preview-label { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; text-align: center; }
+  .notation-preview-hint { font-size: 10.5px; color: var(--muted); line-height: 1.5; text-align: center; margin-top: 4px; }
+  .notat-figure-wrap { position: relative; }
+  .notat-tap-zones { position: absolute; inset: 0; }
+  .notat-tap-zone {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    margin-left: -11px;
+    margin-top: -11px;
+    border-radius: 50%;
+    border: 1.5px dashed var(--panel-line);
+    background: rgba(245, 237, 224, 0.06);
+    cursor: pointer;
+  }
+  .notat-tap-zone:hover, .notat-tap-zone:active { border-color: var(--pink); background: rgba(232, 93, 158, 0.18); }
+  .notat-tap-zone.current { border-color: var(--pink); border-style: solid; background: rgba(232, 93, 158, 0.3); }
+
+  .figure-svg line { stroke-linecap: round; }
+  .figure-svg .torso { stroke: var(--cream); stroke-width: 17; }
+  .figure-svg .head { fill: var(--cream); }
+  .figure-svg .cap { fill: var(--yellow); }
+  .figure-svg .cap-brim { fill: var(--yellow); }
+  .figure-svg .limb-left { stroke: var(--pink); stroke-width: 13; }
+  .figure-svg .limb-right { stroke: var(--yellow); stroke-width: 13; }
+  .figure-svg .limb-left-fill { fill: var(--pink); }
+  .figure-svg .limb-right-fill { fill: var(--yellow); }
+  .side-svg .limb-left { stroke: var(--pink); stroke-width: 10; }
+  .side-svg .limb-right { stroke: var(--yellow); stroke-width: 10; }
+  .side-svg .limb-left-fill { fill: var(--pink); }
+  .side-svg .limb-right-fill { fill: var(--yellow); }
+  .figure-svg .palm-left { fill: var(--pink); }
+  .figure-svg .palm-right { fill: var(--yellow); }
+  .figure-svg .wrist-joint { fill: var(--cream); }
+  .figure-svg .palm-label { font-family: 'Anton', sans-serif; font-size: 11px; fill: var(--bg); }
+
+  .foot-guide { stroke: var(--panel-line); stroke-width: 1; stroke-dasharray: 3 4; }
+  .foot-front-label { font-size: 11px; fill: var(--muted); font-family: 'Zen Kaku Gothic New', sans-serif; }
+  .foot-mark ellipse { fill: var(--pink); transition: opacity 0.1s ease; }
+  .foot-mark.right ellipse { fill: var(--yellow); }
+  .foot-mark text { font-family: 'Anton', sans-serif; font-size: 12px; fill: var(--bg); }
+  .foot-mark.lifted ellipse { fill: none; stroke: var(--pink); stroke-width: 2; opacity: 0.55; }
+  .foot-mark.right.lifted ellipse { stroke: var(--yellow); }
+  .foot-mark.lifted text { fill: var(--muted); }
+
+  .figure-bounce.impact { animation: figureImpact 0.32s ease-out; }
+  @keyframes figureImpact {
+    0%   { transform: translateY(0) scale(1); }
+    35%  { transform: translateY(-5px) scale(1.03); }
+    100% { transform: translateY(0) scale(1); }
+  }
+
+  .choreo-current {
+    font-family: 'Anton', sans-serif;
+    font-size: 22px;
+    color: var(--pink);
+    margin-bottom: 2px;
+    height: 26px;
+    line-height: 1.1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+  }
+
+  .choreo-cue {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 4px;
+    height: 37px;
+    line-height: 1.3;
+    transition: opacity 0.1s ease;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .choreo-tip {
+    font-size: 10.5px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    height: 30px;
+    line-height: 1.4;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .choreo-progress { display: flex; justify-content: center; gap: 5px; margin-bottom: 8px; flex-wrap: wrap; }
+
+  .choreo-dot { width: 13px; height: 13px; border-radius: 4px; background: var(--bg); border: 1.5px solid var(--panel-line); transition: background 0.12s ease, border-color 0.12s ease; }
+  .choreo-dot.done { background: var(--pink); border-color: var(--pink); }
+
+  .choreo-next { font-size: 12px; color: var(--muted); }
+
+  .section-label { font-size: 13px; font-weight: 700; color: var(--muted); margin: 4px 0 10px; }
+
+  .build-columns { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+  .build-col { min-width: 0; display: flex; flex-direction: column; }
+  .build-col.lib-col { flex: 0 0 36%; }
+  .build-col.seq-col { flex: 1; }
+  .build-col-scroll {
+    max-height: 55vh;
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-bottom: 10px;
+  }
+
+  .library-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 0; }
+
+  .library-btn {
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1.5px solid var(--panel-line);
+    background: var(--panel);
+    color: var(--cream);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.05s ease;
+  }
+  .library-btn:active { transform: scale(0.97); }
+  .library-btn:hover { border-color: var(--pink); }
+  .library-btn .lib-name { font-weight: 700; display: block; }
+  .library-btn .lib-desc { font-size: 11px; color: var(--muted); display: block; margin-top: 2px; }
+
+  .sequence-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 0; }
+
+  .sequence-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--panel);
+    border: 1.5px solid var(--panel-line);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+
+  .sequence-item-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+  .sequence-item.current { border-color: var(--pink); }
+
+  .seq-index {
+    font-family: 'Anton', sans-serif;
+    font-size: 14px;
+    color: var(--muted);
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .seq-name { flex: 1 1 auto; min-width: 70px; font-size: 14px; font-weight: 700; }
+
+  .seq-counts {
+    background: var(--bg);
+    color: var(--cream);
+    border: 1px solid var(--panel-line);
+    border-radius: 8px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 12px;
+    padding: 4px 4px;
+  }
+
+  .seq-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    border: 1px solid var(--panel-line);
+    background: var(--bg);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .seq-btn:hover { border-color: var(--pink); color: var(--cream); }
+
+  .sequence-empty { font-size: 12px; color: var(--muted); text-align: center; padding: 14px 0 22px; }
+
+  .add-custom-row { display: flex; gap: 8px; margin-bottom: 24px; }
+
+  .add-custom-row input {
+    flex: 1;
+    background: var(--panel);
+    border: 1.5px solid var(--panel-line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--cream);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 13px;
+  }
+  .add-custom-row input::placeholder { color: var(--muted); }
+
+  .add-custom-row button {
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1.5px solid var(--panel-line);
+    background: transparent;
+    color: var(--cream);
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .add-custom-row button:hover { border-color: var(--pink); }
+
+  /* --- shared BPM / actions --- */
+  .bpm-panel { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 16px; padding: 20px 20px 16px; margin-bottom: 16px; }
+  .bpm-row { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin-bottom: 14px; }
+
+  .bpm-btn {
+    width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--panel-line);
+    background: var(--bg); color: var(--cream); font-size: 20px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.15s ease, transform 0.05s ease;
+  }
+  .bpm-btn:active { transform: scale(0.94); }
+  .bpm-btn:hover { border-color: var(--pink); }
+
+  .bpm-number { font-family: 'Anton', sans-serif; font-size: 48px; min-width: 120px; text-align: center; }
+  .bpm-unit { font-size: 13px; color: var(--muted); letter-spacing: 0.04em; }
+
+  input[type="range"] { width: 100%; accent-color: var(--pink); margin-bottom: 4px; }
+  .range-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+
+  .actions { display: flex; gap: 10px; margin-bottom: 14px; }
+
+  .btn {
+    flex: 1; border: none; border-radius: 12px; padding: 15px 10px;
+    font-family: 'Zen Kaku Gothic New', sans-serif; font-weight: 700; font-size: 15px; cursor: pointer;
+    transition: transform 0.05s ease, opacity 0.15s ease;
+  }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-play { background: var(--pink); color: var(--bg); }
+  .btn-play.playing { background: var(--panel); color: var(--cream); border: 1.5px solid var(--pink); }
+  .btn-play:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-tap { background: transparent; color: var(--cream); border: 1.5px solid var(--panel-line); }
+  .btn-tap:hover { border-color: var(--yellow); }
+
+  /* --- Notation sheet tab --- */
+  .notation-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .notation-controls-label { font-size: 13px; color: var(--muted); font-weight: 700; }
+  .notation-count-btn { width: 32px; height: 32px; font-size: 16px; }
+  .notation-count-display { font-family: 'Anton', sans-serif; font-size: 18px; min-width: 28px; text-align: center; }
+
+  .notation-scroll {
+    overflow-x: auto;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 14px;
+    padding: 10px 0 10px 0;
+    margin-bottom: 14px;
+  }
+
+  .notation-grid { display: inline-block; }
+  .notation-row { display: flex; }
+
+  .notation-label {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    width: 58px;
+    flex-shrink: 0;
+    background: var(--panel);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    padding: 0 4px;
+  }
+  .notation-row.header .notation-label { color: var(--cream); }
+
+  .notation-col-num {
+    width: 44px;
+    height: 26px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Anton', sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--panel-line);
+  }
+  .notation-col-num.playing-col { background: var(--pink); color: var(--bg); border-radius: 6px 6px 0 0; }
+  .notation-cell.playing-col { border-color: var(--pink); border-width: 1.5px; }
+
+  .notation-cell {
+    width: 44px;
+    height: 40px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--panel-line);
+    border-top: none;
+    border-left: none;
+    background: transparent;
+    color: var(--cream);
+    font-size: 10.5px;
+    padding: 2px;
+    text-align: center;
+    line-height: 1.15;
+    cursor: pointer;
+    overflow: hidden;
+  }
+
+  .notation-cell.filled { background: rgba(232, 93, 158, 0.14); color: var(--cream); font-weight: 700; }
+  .notation-cell.active { border-color: var(--pink); border-width: 1.5px; }
+  .notation-cell.measure-end, .notation-col-num.measure-end { border-right: 2px solid var(--muted); }
+
+  .notation-editor {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+
+  .notation-editor-label { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+
+  .notation-palette { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+
+  .notation-chip {
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1.5px solid var(--panel-line);
+    background: var(--bg);
+    color: var(--cream);
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .notation-chip:hover { border-color: var(--pink); }
+  .notation-chip.clear { color: var(--muted); }
+
+  .notation-chip.active-lift { border-color: var(--yellow); color: var(--cream); }
+
+  .notation-foot-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 52px);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .notation-foot-btn {
+    height: 40px;
+    border-radius: 8px;
+    border: 1.5px solid var(--panel-line);
+    background: var(--bg);
+    color: var(--cream);
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .notation-foot-btn.active { border-color: var(--pink); background: rgba(232, 93, 158, 0.14); }
+
+  .notation-text-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1.5px solid var(--panel-line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--cream);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 13px;
+  }
+  .notation-text-input::placeholder { color: var(--muted); }
+
+  .notation-register {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+  .notation-register-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .notation-register-tilde { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+  .notation-register-btn { flex: 0 0 auto; padding: 10px 18px; }
+  .notation-register-row .notation-text-input { flex: 1; }
+  .notation-register-note { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+  .toggle-row { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .toggle-row input { accent-color: var(--pink); }
+
+  .footnote { text-align: center; font-size: 11px; color: var(--panel-line); margin-top: 22px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <p class="app-title">LOCK DANCE TRAINER</p>
+  <p class="app-sub">アップ・ダウン／16ビート／振り付け</p>
+
+  <div class="tab-row" id="tabRow">
+    <button class="tab-btn active" data-tab="rhythm">リズム練習</button>
+    <button class="tab-btn" data-tab="notation">技を作る</button>
+    <button class="tab-btn" data-tab="build">振り付けを作る</button>
+    <button class="tab-btn" data-tab="practice">振り付けを覚える</button>
+  </div>
+
+  <!-- === RHYTHM PANEL === -->
+  <div class="panel active" id="panelRhythm">
+    <div class="stage" id="stage">
+      <div class="updown-label" id="updownLabel">DOWN</div>
+      <div class="mover-track">
+        <div class="mover-pos">
+          <div class="beat-foot beat-foot-l" id="rBeatFootL"></div>
+          <div class="mover" id="mover"></div>
+          <div class="beat-foot beat-foot-r" id="rBeatFootR"></div>
+        </div>
+      </div>
+      <div class="floor-line"></div>
+      <div class="floor-caption" id="floorCaption">プレップ（軽く膝を曲げた状態）</div>
+      <div class="stage-hint" id="stageHint">カウントの瞬間に沈む＝ダウン</div>
+    </div>
+
+    <div class="mode-row" id="modeRow">
+      <button class="mode-btn active" data-mode="down">ダウン</button>
+      <button class="mode-btn" data-mode="up">アップ</button>
+    </div>
+
+    <div class="toggle-row" style="margin-bottom: 20px;">
+      <input type="checkbox" id="sixteenToggle">
+      <label for="sixteenToggle">16ビート刻み（倍のテンポで＆も拾う）</label>
+    </div>
+
+    <div class="count-row" id="countRow"></div>
+  </div>
+
+  <!-- === CHOREOGRAPHY: BUILD PANEL === -->
+  <div class="panel" id="panelBuild">
+    <div class="section-label">セットリスト全体のリズム</div>
+    <div class="mode-row" id="seqModeRow">
+      <button class="mode-btn active" data-mode="down">ダウン</button>
+      <button class="mode-btn" data-mode="up">アップ</button>
+    </div>
+    <div class="toggle-row" style="margin-bottom: 20px;">
+      <input type="checkbox" id="seqSixteenToggle">
+      <label for="seqSixteenToggle">16ビート刻み（倍のテンポで＆も拾う）</label>
+    </div>
+
+    <div class="build-columns">
+      <div class="build-col lib-col">
+        <div class="section-label">技ライブラリ（タップで追加）</div>
+        <div class="build-col-scroll">
+          <div class="library-grid" id="libraryGrid"></div>
+        </div>
+      </div>
+
+      <div class="build-col seq-col">
+        <div class="section-label">振り付けセットリスト</div>
+        <div class="build-col-scroll">
+          <div class="sequence-list" id="sequenceList"></div>
+          <div class="sequence-empty" id="sequenceEmpty">技をタップして、セットリストに追加していきましょう。</div>
+        </div>
+        <div class="add-custom-row">
+          <input type="text" id="customMoveInput" placeholder="オリジナルの技名を追加">
+          <button id="addCustomBtn">追加</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === CHOREOGRAPHY: PRACTICE PANEL === -->
+  <div class="panel" id="panelPractice">
+    <div class="roadmap" id="roadmap"></div>
+
+    <div class="toggle-row" style="margin-bottom: 16px;">
+      <input type="checkbox" id="startOnAndToggle">
+      <label for="startOnAndToggle">＆（アンド）から開始する</label>
+    </div>
+
+    <div class="choreo-stage">
+      <div class="choreo-eyebrow" id="choreoEyebrow">スタート待ち</div>
+
+      <div class="rhythm-badge" id="rhythmBadge">
+        <div class="choreo-mover-track">
+          <div class="beat-foot beat-foot-l" id="beatFootL"></div>
+          <div class="mover" id="miniMover"></div>
+          <div class="beat-foot beat-foot-r" id="beatFootR"></div>
+        </div>
+        <div class="rhythm-badge-label" id="rhythmBadgeLabel">DOWN</div>
+      </div>
+
+      <div class="count-row" id="choreoProgress" style="margin-bottom: 8px;"></div>
+
+      <div class="figure-row">
+        <div class="figure-col">
+          <svg class="figure-svg" viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg">
+            <g id="figureBounce" class="figure-bounce">
+              <g id="figureRoot">
+                <g id="legs">
+                  <g id="leftThigh">
+                    <line class="limb-left" x1="0" y1="0" x2="0" y2="45"></line>
+                    <g id="leftShin" transform="translate(0,45)">
+                      <line class="limb-left" x1="0" y1="0" x2="0" y2="42"></line>
+                      <circle class="limb-left-fill" cx="0" cy="42" r="6"></circle>
+                    </g>
+                  </g>
+                  <g id="rightThigh">
+                    <line class="limb-right" x1="0" y1="0" x2="0" y2="45"></line>
+                    <g id="rightShin" transform="translate(0,45)">
+                      <line class="limb-right" x1="0" y1="0" x2="0" y2="42"></line>
+                      <circle class="limb-right-fill" cx="0" cy="42" r="6"></circle>
+                    </g>
+                  </g>
+                </g>
+                <g id="torsoGroup">
+                  <line class="torso" x1="80" y1="80" x2="80" y2="130"></line>
+                  <circle class="head" cx="80" cy="60" r="16"></circle>
+                  <ellipse class="cap" cx="80" cy="50" rx="19" ry="13"></ellipse>
+                  <ellipse class="cap-brim" cx="80" cy="61" rx="12" ry="4"></ellipse>
+                  <g id="leftUpperArm">
+                    <line class="limb-left" x1="0" y1="0" x2="0" y2="34"></line>
+                    <g id="leftForearm" transform="translate(0,34)">
+                      <line class="limb-left" x1="0" y1="0" x2="0" y2="30"></line>
+                      <g id="leftPalm" transform="translate(0,30)">
+                        <circle class="wrist-joint" cx="0" cy="0" r="4.5"></circle>
+                        <rect class="palm-left" x="-7" y="1" width="14" height="16" rx="4" ry="4"></rect>
+                        <text class="palm-label" x="0" y="11" text-anchor="middle">L</text>
+                      </g>
+                    </g>
+                  </g>
+                  <g id="rightUpperArm">
+                    <line class="limb-right" x1="0" y1="0" x2="0" y2="34"></line>
+                    <g id="rightForearm" transform="translate(0,34)">
+                      <line class="limb-right" x1="0" y1="0" x2="0" y2="30"></line>
+                      <g id="rightPalm" transform="translate(0,30)">
+                        <circle class="wrist-joint" cx="0" cy="0" r="4.5"></circle>
+                        <rect class="palm-right" x="-7" y="1" width="14" height="16" rx="4" ry="4"></rect>
+                        <text class="palm-label" x="0" y="11" text-anchor="middle">R</text>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </svg>
+          <div class="figure-caption">正面から見た動き（ピンク＝左／黄＝右）</div>
+        </div>
+
+        <div class="figure-col">
+          <svg class="side-svg" viewBox="0 0 120 220" xmlns="http://www.w3.org/2000/svg">
+            <line class="side-guide" x1="10" y1="205" x2="110" y2="205"></line>
+            <text class="side-dir-label" x="104" y="218" text-anchor="middle">前</text>
+            <text class="side-dir-label" x="16" y="218" text-anchor="middle">後</text>
+            <g id="sideFigureRoot">
+              <circle class="side-tail" cx="47" cy="127" r="6"></circle>
+              <g id="sideThighR" transform="translate(57,130)">
+                <line class="limb-right" x1="0" y1="0" x2="0" y2="45"></line>
+                <g id="sideShinR" transform="translate(0,45)">
+                  <line class="limb-right" x1="0" y1="0" x2="0" y2="42"></line>
+                  <circle class="limb-right-fill" cx="0" cy="42" r="6"></circle>
+                </g>
+              </g>
+              <g id="sideThighL" transform="translate(63,130)">
+                <line class="limb-left" x1="0" y1="0" x2="0" y2="45"></line>
+                <g id="sideShinL" transform="translate(0,45)">
+                  <line class="limb-left" x1="0" y1="0" x2="0" y2="42"></line>
+                  <circle class="limb-left-fill" cx="0" cy="42" r="6"></circle>
+                </g>
+              </g>
+              <g id="sideTorsoGroup">
+                <line class="side-torso" x1="60" y1="80" x2="60" y2="130"></line>
+                <circle class="side-ponytail" cx="45" cy="58" r="5"></circle>
+                <circle class="side-ponytail" cx="39" cy="68" r="4"></circle>
+                <circle class="side-ponytail" cx="36" cy="77" r="3"></circle>
+                <circle class="side-head" cx="60" cy="60" r="16"></circle>
+                <ellipse class="side-cap" cx="60" cy="50" rx="18" ry="13"></ellipse>
+                <ellipse class="side-cap-brim" cx="77" cy="57" rx="9" ry="4"></ellipse>
+                <g id="sideArmR" transform="translate(57,82)">
+                  <line class="limb-right" x1="0" y1="0" x2="0" y2="34"></line>
+                  <g id="sideForearmR" transform="translate(0,34)">
+                    <line class="limb-right" x1="0" y1="0" x2="0" y2="30"></line>
+                    <circle class="limb-right-fill" cx="0" cy="30" r="6"></circle>
+                  </g>
+                </g>
+                <g id="sideArmL" transform="translate(63,82)">
+                  <line class="limb-left" x1="0" y1="0" x2="0" y2="34"></line>
+                  <g id="sideForearmL" transform="translate(0,34)">
+                    <line class="limb-left" x1="0" y1="0" x2="0" y2="30"></line>
+                    <circle class="limb-left-fill" cx="0" cy="30" r="6"></circle>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </svg>
+          <div class="figure-caption">横から見た動き（前後・前かがみ）</div>
+        </div>
+
+        <div class="figure-col">
+          <svg class="foot-svg" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+            <line class="foot-guide" x1="80" y1="10" x2="80" y2="150"></line>
+            <text class="foot-front-label" x="80" y="18" text-anchor="middle">前</text>
+            <g id="leftFootG" class="foot-mark left">
+              <ellipse cx="0" cy="0" rx="12" ry="17"></ellipse>
+              <text x="0" y="4" text-anchor="middle">L</text>
+            </g>
+            <g id="rightFootG" class="foot-mark right">
+              <ellipse cx="0" cy="0" rx="12" ry="17"></ellipse>
+              <text x="0" y="4" text-anchor="middle">R</text>
+            </g>
+          </svg>
+          <div class="figure-caption">足の位置（上から見た図）</div>
+        </div>
+      </div>
+
+      <div class="choreo-current" id="choreoCurrent">技を追加してください</div>
+      <div class="choreo-cue" id="choreoCue"></div>
+      <div class="choreo-tip" id="choreoTip"></div>
+      <div class="choreo-next" id="choreoNext"></div>
+    </div>
+  </div>
+
+  <!-- === NOTATION SHEET PANEL === -->
+  <div class="panel" id="panelNotation">
+    <div class="notation-controls">
+      <span class="notation-controls-label">拍数</span>
+      <button class="bpm-btn notation-count-btn" id="notationCountsMinus">−</button>
+      <span class="notation-count-display" id="notationCountsDisplay">8</span>
+      <button class="bpm-btn notation-count-btn" id="notationCountsPlus">＋</button>
+    </div>
+
+    <div class="notation-scroll" id="notationScroll">
+      <div class="notation-grid" id="notationGrid"></div>
+    </div>
+
+    <div class="notation-preview">
+      <div class="notation-preview-label" id="notationPreviewLabel">プレビュー：1拍目</div>
+      <div class="figure-row" style="margin-bottom: 4px;">
+        <div class="figure-col">
+          <div class="notat-figure-wrap">
+            <svg class="figure-svg" viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg">
+              <g id="notatFigureBounce" class="figure-bounce">
+                <g id="notatFigureRoot">
+                  <g id="notatLegs">
+                    <g id="notatLeftThigh">
+                      <line class="limb-left" x1="0" y1="0" x2="0" y2="45"></line>
+                      <g id="notatLeftShin" transform="translate(0,45)">
+                        <line class="limb-left" x1="0" y1="0" x2="0" y2="42"></line>
+                        <circle class="limb-left-fill" cx="0" cy="42" r="6"></circle>
+                      </g>
+                    </g>
+                    <g id="notatRightThigh">
+                      <line class="limb-right" x1="0" y1="0" x2="0" y2="45"></line>
+                      <g id="notatRightShin" transform="translate(0,45)">
+                        <line class="limb-right" x1="0" y1="0" x2="0" y2="42"></line>
+                        <circle class="limb-right-fill" cx="0" cy="42" r="6"></circle>
+                      </g>
+                    </g>
+                  </g>
+                  <g id="notatTorsoGroup">
+                    <line class="torso" x1="80" y1="80" x2="80" y2="130"></line>
+                    <circle class="head" cx="80" cy="60" r="16"></circle>
+                    <ellipse class="cap" cx="80" cy="50" rx="19" ry="13"></ellipse>
+                    <ellipse class="cap-brim" cx="80" cy="61" rx="12" ry="4"></ellipse>
+                    <g id="notatLeftUpperArm">
+                      <line class="limb-left" x1="0" y1="0" x2="0" y2="34"></line>
+                      <g id="notatLeftForearm" transform="translate(0,34)">
+                        <line class="limb-left" x1="0" y1="0" x2="0" y2="30"></line>
+                        <g id="notatLeftPalm" transform="translate(0,30)">
+                          <circle class="wrist-joint" cx="0" cy="0" r="4.5"></circle>
+                          <rect class="palm-left" x="-7" y="1" width="14" height="16" rx="4" ry="4"></rect>
+                          <text class="palm-label" x="0" y="11" text-anchor="middle">L</text>
+                        </g>
+                      </g>
+                    </g>
+                    <g id="notatRightUpperArm">
+                      <line class="limb-right" x1="0" y1="0" x2="0" y2="34"></line>
+                      <g id="notatRightForearm" transform="translate(0,34)">
+                        <line class="limb-right" x1="0" y1="0" x2="0" y2="30"></line>
+                        <g id="notatRightPalm" transform="translate(0,30)">
+                          <circle class="wrist-joint" cx="0" cy="0" r="4.5"></circle>
+                          <rect class="palm-right" x="-7" y="1" width="14" height="16" rx="4" ry="4"></rect>
+                          <text class="palm-label" x="0" y="11" text-anchor="middle">R</text>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>
+            <div class="notat-tap-zones" id="notatHandZones"></div>
+          </div>
+          <div class="figure-caption">正面（ピンク＝左／黄＝右）</div>
+        </div>
+
+        <div class="figure-col">
+          <svg class="side-svg" viewBox="0 0 120 220" xmlns="http://www.w3.org/2000/svg">
+            <line class="side-guide" x1="10" y1="205" x2="110" y2="205"></line>
+            <text class="side-dir-label" x="104" y="218" text-anchor="middle">前</text>
+            <text class="side-dir-label" x="16" y="218" text-anchor="middle">後</text>
+            <g id="notatSideFigureRoot">
+              <circle class="side-tail" cx="47" cy="127" r="6"></circle>
+              <g id="notatSideThighR" transform="translate(57,130)">
+                <line class="limb-right" x1="0" y1="0" x2="0" y2="45"></line>
+                <g id="notatSideShinR" transform="translate(0,45)">
+                  <line class="limb-right" x1="0" y1="0" x2="0" y2="42"></line>
+                  <circle class="limb-right-fill" cx="0" cy="42" r="6"></circle>
+                </g>
+              </g>
+              <g id="notatSideThighL" transform="translate(63,130)">
+                <line class="limb-left" x1="0" y1="0" x2="0" y2="45"></line>
+                <g id="notatSideShinL" transform="translate(0,45)">
+                  <line class="limb-left" x1="0" y1="0" x2="0" y2="42"></line>
+                  <circle class="limb-left-fill" cx="0" cy="42" r="6"></circle>
+                </g>
+              </g>
+              <g id="notatSideTorsoGroup">
+                <line class="side-torso" x1="60" y1="80" x2="60" y2="130"></line>
+                <circle class="side-ponytail" cx="45" cy="58" r="5"></circle>
+                <circle class="side-ponytail" cx="39" cy="68" r="4"></circle>
+                <circle class="side-ponytail" cx="36" cy="77" r="3"></circle>
+                <circle class="side-head" cx="60" cy="60" r="16"></circle>
+                <ellipse class="side-cap" cx="60" cy="50" rx="18" ry="13"></ellipse>
+                <ellipse class="side-cap-brim" cx="77" cy="57" rx="9" ry="4"></ellipse>
+                <g id="notatSideArmR" transform="translate(57,82)">
+                  <line class="limb-right" x1="0" y1="0" x2="0" y2="34"></line>
+                  <g id="notatSideForearmR" transform="translate(0,34)">
+                    <line class="limb-right" x1="0" y1="0" x2="0" y2="30"></line>
+                    <circle class="limb-right-fill" cx="0" cy="30" r="6"></circle>
+                  </g>
+                </g>
+                <g id="notatSideArmL" transform="translate(63,82)">
+                  <line class="limb-left" x1="0" y1="0" x2="0" y2="34"></line>
+                  <g id="notatSideForearmL" transform="translate(0,34)">
+                    <line class="limb-left" x1="0" y1="0" x2="0" y2="30"></line>
+                    <circle class="limb-left-fill" cx="0" cy="30" r="6"></circle>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </svg>
+          <div class="figure-caption">横から見た動き（前後）</div>
+        </div>
+
+        <div class="figure-col">
+          <div class="notat-figure-wrap">
+            <svg class="foot-svg" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+              <line class="foot-guide" x1="80" y1="10" x2="80" y2="150"></line>
+              <text class="foot-front-label" x="80" y="18" text-anchor="middle">前</text>
+              <g id="notatLeftFootG" class="foot-mark left">
+                <ellipse cx="0" cy="0" rx="12" ry="17"></ellipse>
+                <text x="0" y="4" text-anchor="middle">L</text>
+              </g>
+              <g id="notatRightFootG" class="foot-mark right">
+                <ellipse cx="0" cy="0" rx="12" ry="17"></ellipse>
+                <text x="0" y="4" text-anchor="middle">R</text>
+              </g>
+            </svg>
+            <div class="notat-tap-zones" id="notatFootZones"></div>
+          </div>
+          <div class="figure-caption">足の位置（上から見た図）</div>
+        </div>
+      </div>
+      <div class="notation-register-row" style="margin-bottom: 6px;">
+        <select class="seq-counts" id="notationPlayStart"></select>
+        <span class="notation-register-tilde">〜</span>
+        <select class="seq-counts" id="notationPlayEnd"></select>
+        <button class="btn btn-tap notation-register-btn" id="notationPlayBtn">▶ 再生</button>
+      </div>
+      <div class="notation-preview-hint" id="notationPreviewHint">セルを選ぶと、そのカウントの全身プレビューが出ます。手・足のセルを選んでいる間だけ、今選んでいる部位のタップポイントが図の上に表示され、そこを直接タップして設定できます。</div>
+    </div>
+
+    <div class="notation-editor" id="notationEditor">
+      <div class="notation-editor-label" id="notationEditorLabel">セルをタップして入力</div>
+      <div class="notation-palette" id="notationPalette"></div>
+      <input type="text" class="notation-text-input" id="notationTextInput" placeholder="自由入力（記号になければこちらへ）">
+    </div>
+
+    <div class="notation-register">
+      <div class="section-label">この範囲を技として登録</div>
+      <div class="notation-register-row">
+        <select class="seq-counts" id="notationRegStart"></select>
+        <span class="notation-register-tilde">〜</span>
+        <select class="seq-counts" id="notationRegEnd"></select>
+        <span class="notation-register-tilde">拍目</span>
+      </div>
+      <div class="notation-register-row">
+        <input type="text" class="notation-text-input" id="notationRegName" placeholder="技の名前（例：オリジナルコンボ1）">
+        <button class="btn btn-tap notation-register-btn" id="notationRegBtn">登録</button>
+      </div>
+      <div class="notation-register-note" id="notationRegNote">登録すると「振り付けを作る」画面の技ライブラリに追加されます。</div>
+    </div>
+
+    <div class="notation-register">
+      <div class="section-label">技ライブラリから読み込んで編集</div>
+      <div class="notation-register-row">
+        <select class="seq-counts" id="notationLibrarySelect"></select>
+        <button class="btn btn-tap notation-register-btn" id="notationLibraryLoadBtn">読み込む</button>
+      </div>
+      <div class="notation-register-note">近似データを「技を作る」画面に読み込みます。調整して登録すると、新しい「自分の技」として追加されます（元の技は変わりません）。</div>
+    </div>
+
+    <div class="notation-register" id="notationCustomList" style="display: none;">
+      <div class="section-label">登録済みの自分の技を編集</div>
+      <div id="notationCustomListInner"></div>
+    </div>
+  </div>
+
+  <!-- === SHARED BPM + PLAY === -->
+  <div class="bpm-panel">
+    <div class="bpm-row">
+      <button class="bpm-btn" id="bpmMinus">−</button>
+      <div>
+        <div class="bpm-number" id="bpmNumber">96</div>
+        <div class="bpm-unit" style="text-align:center;">BPM</div>
+      </div>
+      <button class="bpm-btn" id="bpmPlus">＋</button>
+    </div>
+    <input type="range" id="bpmSlider" min="50" max="200" value="96">
+    <div class="range-labels"><span>50</span><span>200</span></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-play" id="playBtn">▶ 再生</button>
+    <button class="btn btn-tap" id="tapBtn">タップでBPM</button>
+  </div>
+
+  <div class="toggle-row">
+    <input type="checkbox" id="clickToggle" checked>
+    <label for="clickToggle">クリック音を鳴らす</label>
+  </div>
+
+  <p class="footnote" id="footnote">ダウン＝膝を曲げて沈む動き。まずは片方だけを繰り返して体に入れましょう。</p>
+</div>
+
+<script>
+(function () {
+  // ---------- shared elements ----------
+  const tabRow = document.getElementById('tabRow');
+  const panelRhythm = document.getElementById('panelRhythm');
+  const panelBuild = document.getElementById('panelBuild');
+  const panelPractice = document.getElementById('panelPractice');
+  const panelNotation = document.getElementById('panelNotation');
+  const bpmNumber = document.getElementById('bpmNumber');
+  const bpmSlider = document.getElementById('bpmSlider');
+  const bpmMinus = document.getElementById('bpmMinus');
+  const bpmPlus = document.getElementById('bpmPlus');
+  const playBtn = document.getElementById('playBtn');
+  const tapBtn = document.getElementById('tapBtn');
+  const clickToggle = document.getElementById('clickToggle');
+  const footnote = document.getElementById('footnote');
+
+  // ---------- rhythm-tab elements ----------
+  const stage = document.getElementById('stage');
+  const updownLabel = document.getElementById('updownLabel');
+  const mover = document.getElementById('mover');
+  const rBeatFootL = document.getElementById('rBeatFootL');
+  const rBeatFootR = document.getElementById('rBeatFootR');
+  const modeRow = document.getElementById('modeRow');
+  const countRow = document.getElementById('countRow');
+  const floorCaption = document.getElementById('floorCaption');
+  const stageHint = document.getElementById('stageHint');
+
+  // ---------- choreo-tab elements ----------
+  const choreoEyebrow = document.getElementById('choreoEyebrow');
+  const choreoCurrent = document.getElementById('choreoCurrent');
+  const choreoCue = document.getElementById('choreoCue');
+  const choreoTip = document.getElementById('choreoTip');
+  const choreoProgress = document.getElementById('choreoProgress');
+  const choreoNext = document.getElementById('choreoNext');
+  const roadmap = document.getElementById('roadmap');
+  const startOnAndToggle = document.getElementById('startOnAndToggle');
+  const libraryGrid = document.getElementById('libraryGrid');
+  const sequenceList = document.getElementById('sequenceList');
+  const sequenceEmpty = document.getElementById('sequenceEmpty');
+  const customMoveInput = document.getElementById('customMoveInput');
+  const addCustomBtn = document.getElementById('addCustomBtn');
+  const transportEls = [document.querySelector('.bpm-panel'), document.querySelector('.actions'), document.querySelector('.toggle-row')];
+
+  // ---------- shared state ----------
+  let bpm = 96;
+  let playing = false;
+  let audioCtx = null;
+  let rafId = null;
+  let activeTab = 'rhythm';
+
+  function setBpm(newBpm) {
+    bpm = Math.max(50, Math.min(200, newBpm));
+    bpmNumber.textContent = bpm;
+    bpmSlider.value = bpm;
+  }
+  bpmSlider.addEventListener('input', () => setBpm(parseInt(bpmSlider.value, 10)));
+  bpmMinus.addEventListener('click', () => setBpm(bpm - 2));
+  bpmPlus.addEventListener('click', () => setBpm(bpm + 2));
+
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function click(freq) {
+    if (!clickToggle.checked || !audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.08);
+  }
+
+  // ================= TABS =================
+  function setTab(tab) {
+    if (playing) stopPlayback();
+    if (notationPlaying) stopNotationPlay();
+    activeTab = tab;
+    [...tabRow.children].forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    panelRhythm.classList.toggle('active', tab === 'rhythm');
+    panelBuild.classList.toggle('active', tab === 'build');
+    panelPractice.classList.toggle('active', tab === 'practice');
+    panelNotation.classList.toggle('active', tab === 'notation');
+    transportEls.forEach(el => { if (el) el.style.display = (tab === 'build' || tab === 'notation') ? 'none' : ''; });
+    if (tab === 'rhythm') {
+      applyModeText();
+    } else if (tab === 'build') {
+      footnote.textContent = '技をタップしてセットリストを組み、拍数や順番を調整しましょう。';
+      renderSequence();
+    } else if (tab === 'notation') {
+      footnote.textContent = 'セルをタップして、記号か自由入力で動きをメモできます。';
+      renderNotationGrid();
+    } else {
+      footnote.textContent = 'セットリストを組んだら再生ボタンで、BPMに合わせて技が自動で切り替わります。';
+      renderChoreoIdle();
+    }
+  }
+  tabRow.addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab-btn');
+    if (!btn || btn.dataset.tab === activeTab) return;
+    setTab(btn.dataset.tab);
+  });
+
+  // ================= RHYTHM TAB =================
+  let rMode = 'down'; // 'down' | 'up'
+  let rSixteen = false; // gates only the "and" click sound + hint text; display always subdivides
+  let rStepIndex = 0;
+  let rDots = [];
+  const sixteenToggle = document.getElementById('sixteenToggle');
+
+  const MODE_TEXT = {
+    down: { hint: 'カウントの瞬間に沈む＝ダウン', foot: 'ダウン＝膝を曲げて沈む動き。まずは片方だけを繰り返して体に入れましょう。' },
+    up:   { hint: '軽く曲げた状態から伸び上がる＝アップ', foot: 'アップ＝プレップ（軽い膝曲げ）から膝を伸ばして伸び上がる動き。' }
+  };
+
+  function rStepsTotal() { return 16; }
+
+  function buildCountRow() {
+    countRow.innerHTML = '';
+    rDots = [];
+    const total = rStepsTotal();
+    for (let i = 0; i < total; i++) {
+      const d = document.createElement('div');
+      const isOffBeat = i % 2 === 1;
+      d.className = 'count-dot' + (i === 0 ? ' one' : '') + (isOffBeat ? ' off-beat' : '');
+      d.textContent = isOffBeat ? '&' : String(i / 2 + 1);
+      countRow.appendChild(d);
+      rDots.push(d);
+    }
+  }
+
+  function applyModeText() {
+    const t = MODE_TEXT[rMode];
+    let hint = t.hint + '（＆も表示。「16ビート刻み」をオンにすると＆にもクリック音）';
+    let foot = t.foot + ' ＆（裏拍）は常に表示・カウントされます。16ビート刻みをオンにすると＆にもクリック音が付きます。';
+    stageHint.textContent = hint;
+    footnote.textContent = foot;
+    floorCaption.textContent = 'プレップ（軽く膝を曲げた状態）';
+    rBeatFootL.classList.toggle('enabled', rSixteen);
+    rBeatFootR.classList.toggle('enabled', rSixteen);
+  }
+
+  function setRMode(newMode) {
+    rMode = newMode;
+    [...modeRow.children].forEach(b => b.classList.toggle('active', b.dataset.mode === rMode));
+    rStepIndex = 0;
+    buildCountRow();
+    applyModeText();
+    mover.classList.remove('hit-down', 'hit-up', 'down');
+    stage.classList.remove('down');
+    updownLabel.textContent = rMode === 'down' ? 'DOWN' : 'UP';
+  }
+
+  modeRow.addEventListener('click', (e) => {
+    const btn = e.target.closest('.mode-btn');
+    if (!btn || btn.dataset.mode === rMode) return;
+    setRMode(btn.dataset.mode);
+  });
+
+  sixteenToggle.addEventListener('change', () => {
+    rSixteen = sixteenToggle.checked;
+    applyModeText();
+  });
+
+  function fireRhythmStep() {
+    const total = rStepsTotal();
+    const stepMs = (60 / bpm) * 500;
+    const animMs = Math.min(500, stepMs * 0.85) + 'ms';
+
+    rDots.forEach(d => d.classList.remove('active', 'down'));
+    rDots[rStepIndex].classList.add('active');
+    bounceFeetPair(rBeatFootL, rBeatFootR);
+
+    const isOffBeat = rStepIndex % 2 === 1;
+    if (isOffBeat) {
+      if (rSixteen) click(520);
+    } else {
+      mover.style.animationDuration = animMs;
+      mover.classList.remove('hit-down', 'hit-up');
+      void mover.offsetWidth;
+      if (rMode === 'down') {
+        stage.classList.add('down');
+        mover.classList.add('down', 'hit-down');
+        rDots[rStepIndex].classList.add('down');
+        click(440);
+      } else {
+        stage.classList.remove('down');
+        mover.classList.remove('down');
+        mover.classList.add('hit-up');
+        click(660);
+      }
+    }
+    rStepIndex = (rStepIndex + 1) % total;
+  }
+
+  function resetRhythmVisuals() {
+    mover.classList.remove('hit-down', 'hit-up');
+    stage.classList.remove('down');
+    updownLabel.textContent = rMode === 'down' ? 'DOWN' : 'UP';
+    rDots.forEach(d => d.classList.remove('active', 'down'));
+  }
+
+  // ================= CHOREOGRAPHY TAB =================
+  const MOVE_LIBRARY = [
+    { name: '右トゥエル', desc: '肘まで地面と平行、肘から先を垂直に上げて手首を返す（2カウント）',
+      tip: '万歳ではない。肘までは地面と平行に保ち、肘から先だけを地面と垂直に立てる。ワンの回転を2回連続で続けることもある。',
+      cues: ['ワン：肘は地面と平行のまま、肘から先を垂直に立てて手首を返す', 'ツー：腕を下ろして元の位置に戻る'],
+      poses: [ {rShoulder:-90, rElbow:-90, rWrist:0}, {} ],
+      feet: [ {}, {} ],
+      sidePoses: [ {rSideArmAngle:-150, rSideArmBend:15}, {} ] },
+    { name: '左トゥエル', desc: '肘まで地面と平行、肘から先を垂直に上げて手首を返す（2カウント）',
+      tip: '右トゥエルと同じ要領で、左右どちらも同じようにできるようにする。',
+      cues: ['ワン：肘は地面と平行のまま、肘から先を垂直に立てて手首を返す', 'ツー：腕を下ろして元の位置に戻る'],
+      poses: [ {lShoulder:90, lElbow:90, lWrist:0}, {} ],
+      feet: [ {}, {} ],
+      sidePoses: [ {lSideArmAngle:-150, lSideArmBend:15}, {} ] },
+    { name: '両手トゥエル', desc: '両肘まで地面と平行、肘から先を垂直に上げて手首を返す（2カウント）',
+      tip: '万歳ではない。両腕とも肘までは地面と平行に保つ。片方だけ遅れないように。',
+      cues: ['ワン：両肘は地面と平行のまま、肘から先を垂直に立てて手首を返す', 'ツー：両腕を下ろして元の位置に戻る'],
+      poses: [ {lShoulder:90, lElbow:90, lWrist:0, rShoulder:-90, rElbow:-90, rWrist:0}, {} ],
+      feet: [ {}, {} ],
+      sidePoses: [ {rSideArmAngle:-150, rSideArmBend:15, lSideArmAngle:-150, lSideArmBend:15}, {} ] },
+    { name: '右ペーシング', desc: '身体の前下のドラムを上から叩く（2カウント）',
+      tip: '肩より上には上げない。ワンで地面と平行（肩の高さ）まで構え、ツーで前下のドラムを上から叩き下ろす。',
+      cues: ['ワン：腕を地面と平行に上げる（肩の高さ）', 'ツー：前下のドラムを上から叩き下ろす'],
+      poses: [ {rShoulder:-90, rElbow:0}, {rShoulder:-15, rElbow:-45} ],
+      feet: [ {}, {} ],
+      sidePoses: [ {rSideArmAngle:-90, rSideArmBend:0}, {rSideArmAngle:-30, rSideArmBend:-70} ] },
+    { name: '左ペーシング', desc: '身体の前下のドラムを上から叩く（2カウント）',
+      tip: '右ペーシングと同じ要領で、肩より上には上げない。',
+      cues: ['ワン：腕を地面と平行に上げる（肩の高さ）', 'ツー：前下のドラムを上から叩き下ろす'],
+      poses: [ {lShoulder:90, lElbow:0}, {lShoulder:15, lElbow:45} ],
+      feet: [ {}, {} ],
+      sidePoses: [ {lSideArmAngle:-90, lSideArmBend:0}, {lSideArmAngle:-30, lSideArmBend:-70} ] },
+    { name: 'ロック', desc: '肘を曲げて静止するポーズ',
+      tip: '止まっている時間を長く。動いている部分を見せないのがコツ。前かがみになる感じは横向きの図で確認できます。',
+      cues: ['上体を少し前に倒す', '肘を開いて胸を内側に入れる', '手首をひねって止める', '片方に体重をのせてキメる'],
+      poses: [ {torsoLean:18}, {torsoLean:18, lShoulder:-55, lElbow:-80, rShoulder:55, rElbow:80}, {torsoLean:18, lShoulder:-55, lElbow:-60, rShoulder:55, rElbow:60}, {torsoLean:18, lShoulder:-55, lElbow:-60, rShoulder:55, rElbow:60, bodyY:10, rHip:22} ],
+      feet: [ {}, {}, {}, {l:{x:68,y:95,up:true}} ],
+      sidePoses: [
+        {sideLean:28},
+        {sideLean:28, rSideArmAngle:-70, rSideArmBend:-50, lSideArmAngle:-70, lSideArmBend:-50},
+        {sideLean:28, rSideArmAngle:-70, rSideArmBend:-35, lSideArmAngle:-70, lSideArmBend:-35},
+        {sideLean:24, rSideArmAngle:-70, rSideArmBend:-35, lSideArmAngle:-70, lSideArmBend:-35, rSideLegAngle:-18, bodyY:8}
+      ] },
+    { name: 'ポイント', desc: '指をさして止まる',
+      tip: '指す方向をしっかり見る。決まった瞬間に「スタッ」と音が鳴るイメージで止まる。',
+      cues: ['腕を下ろして構える', '肘を肩の高さまで上げる', '人差し指をまっすぐ伸ばす', '体重をのせてキメる'],
+      poses: [ {}, {rShoulder:-90, rElbow:90}, {rShoulder:-90, rElbow:0}, {rShoulder:-90, rElbow:0, torsoLean:8, rHip:18} ],
+      feet: [ {}, {}, {}, {l:{x:68,y:95,up:true}} ],
+      sidePoses: [ {}, {rSideArmAngle:-90, rSideArmBend:90}, {rSideArmAngle:-90, rSideArmBend:0}, {rSideArmAngle:-90, rSideArmBend:0, sideLean:8} ] },
+    { name: 'クラップ', desc: '肘を固定して手を打つ',
+      tip: '肘の高さを変えずに、脇を締めて打つ。',
+      cues: ['足を肩幅に開く', '肘を90度に固定する', '右手を体の前で左へ寄せる', '左手を重ねて手を打つ'],
+      poses: [ {lHip:20, rHip:-20}, {lShoulder:-90, lElbow:90, rShoulder:90, rElbow:-90}, {lShoulder:-40, lElbow:40, rShoulder:90, rElbow:-90}, {lShoulder:-10, lElbow:10, rShoulder:10, rElbow:-10} ],
+      feet: [ {l:{x:50,y:102}, r:{x:110,y:102}}, {l:{x:50,y:102}, r:{x:110,y:102}}, {l:{x:50,y:102}, r:{x:110,y:102}}, {l:{x:50,y:102}, r:{x:110,y:102}} ],
+      sidePoses: [ {}, {lSideArmAngle:-70, lSideArmBend:-90, rSideArmAngle:-70, rSideArmBend:-90}, {lSideArmAngle:-70, lSideArmBend:-90, rSideArmAngle:-70, rSideArmBend:-90}, {lSideArmAngle:-70, lSideArmBend:-90, rSideArmAngle:-70, rSideArmBend:-90} ] },
+    { name: 'クロスハンド', desc: '腕と足をクロスさせる',
+      tip: '上半身は固定し、足だけでしっかり踏み替える。',
+      cues: ['腕と右足を中心に寄せる', '右手は回し左手足は伸ばす', '腕と足を体の前でクロス', '足踏みしながら背中側で手を打つ'],
+      poses: [ {lHip:30, rHip:5, torsoLean:-8}, {lShoulder:-90, lElbow:60, rShoulder:20, rElbow:10, rHip:-30}, {lShoulder:40, lElbow:-40, rShoulder:-40, rElbow:40, lHip:-30, rHip:30}, {lShoulder:100, lElbow:60, rShoulder:-100, rElbow:-60, bodyY:6} ],
+      feet: [ {r:{x:75,y:96}}, {l:{x:40,y:104,up:true}, r:{x:75,y:96}}, {l:{x:95,y:98}, r:{x:55,y:98}}, {l:{x:60,y:100,up:true}, r:{x:100,y:100}} ],
+      sidePoses: [ {sideLean:-8}, {lSideArmAngle:-90, lSideArmBend:40, rSideArmAngle:-40, rSideArmBend:20}, {lSideArmAngle:-40, lSideArmBend:-30, rSideArmAngle:-90, rSideArmBend:30}, {lSideArmAngle:-100, lSideArmBend:20, rSideArmAngle:-100, rSideArmBend:-20, bodyY:6} ] },
+    { name: 'キックウォーク', desc: '蹴り上げながら進む',
+      tip: '足を大きく動かすと映える。着地は静かに。',
+      cues: ['体を横に向ける', '前の足をかかとから蹴り上げる', '足を下ろし反対の足を上げる', 'つま先を外に向けて沈み込む'],
+      poses: [ {torsoLean:10}, {rHip:-70, rKnee:40, torsoLean:10}, {rHip:-20, rKnee:10, lHip:40, lKnee:-30, torsoLean:10}, {bodyY:10, torsoLean:10} ],
+      feet: [ {}, {r:{x:100,y:70,up:true}}, {r:{x:100,y:80}, l:{x:60,y:75,up:true}}, {l:{x:55,y:85}, r:{x:100,y:80}} ],
+      sidePoses: [ {sideLean:10}, {rSideLegAngle:-70, rSideLegBend:40, sideLean:10}, {rSideLegAngle:-20, rSideLegBend:10, lSideLegAngle:30, lSideLegBend:-25, sideLean:10}, {lSideLegAngle:-10, lSideLegBend:5, bodyY:10, sideLean:10} ] },
+    { name: 'スクービードゥ', desc: 'マッスルポーズと蹴り出しの組み合わせ',
+      tip: '名前は人名で、やり方は一つではない。周りは気にせず自分のできる形でOK。',
+      cues: ['マッスルポーズ（両手グーで力こぶ）', 'かかとを付けて足先を開き、菱形の形を作る', '右足を前に蹴り出す（膝から先を出す）', '右足を下ろし、左足を胸まで引き上げて迎える'],
+      poses: [ {lShoulder:-100, lElbow:-120, rShoulder:100, rElbow:120}, {lHip:20, rHip:-20}, {rHip:-70, rKnee:30, torsoLean:5}, {lHip:-70, lKnee:60, bodyY:8, torsoLean:15} ],
+      feet: [ {}, {l:{x:70,y:105}, r:{x:90,y:105}}, {r:{x:100,y:70,up:true}}, {r:{x:100,y:95}, l:{x:60,y:75,up:true}} ],
+      sidePoses: [ {lSideArmAngle:-150, lSideArmBend:80, rSideArmAngle:-150, rSideArmBend:80}, {}, {rSideLegAngle:-60, rSideLegBend:30, sideLean:5}, {lSideLegAngle:-70, lSideLegBend:70, sideLean:15, bodyY:8} ] },
+    { name: 'ウィッチウェイ', desc: '軸足を切り替えながら片足を横に上げる',
+      tip: '上半身と下半身は連動させない。下半身が忙しくても上半身には余裕を持たせる。',
+      cues: ['体を横に向けて構える（上半身はブレさせない）', '片足をかかとから真横に上げる（16ビートを保つ）', '軸足を180度切り替えながら足を入れ替える', '反対の足で同じように繰り返す'],
+      poses: [ {torsoLean:10}, {rHip:-60, rKnee:60, torsoLean:10}, {rHip:-90, rKnee:90, torsoLean:10}, {lHip:60, lKnee:-60, torsoLean:-10} ],
+      feet: [ {}, {r:{x:130,y:95,up:true}}, {r:{x:120,y:80,up:true}}, {l:{x:30,y:95,up:true}, r:{x:100,y:100}} ],
+      sidePoses: [ {sideLean:10}, {rSideLegAngle:-15, rSideLegBend:40, sideLean:10}, {rSideLegAngle:-20, rSideLegBend:55, sideLean:10}, {lSideLegAngle:-15, lSideLegBend:40, sideLean:-10} ] },
+    { name: 'スキーターラビット', desc: 'エンド・ワン・ツーで蹴り出して着地',
+      tip: '歩幅は狭くてよい。上げた足は軸足にしっかり寄せる（タイトスカートを履いているイメージ）。',
+      cues: ['エンドで右足を後ろへ引く（地面を蹴るように）', 'ワンで右足を正面へ蹴り出す', 'ツーで右足を着地、同時に左足を上げる', 'スリーで左足を下ろし、フォーで前後を入れ替える'],
+      poses: [ {rHip:20, rKnee:-30}, {rHip:-70, rKnee:20, torsoLean:5}, {rHip:-20, rKnee:5, lHip:-60, lKnee:50}, {lHip:20, lKnee:-10, rHip:-20, rKnee:5} ],
+      feet: [ {r:{x:100,y:125,up:true}}, {r:{x:100,y:60,up:true}}, {r:{x:100,y:90}, l:{x:60,y:70,up:true}}, {l:{x:60,y:125}, r:{x:100,y:80}} ],
+      sidePoses: [ {rSideLegAngle:25, rSideLegBend:-20}, {rSideLegAngle:-70, rSideLegBend:25, sideLean:5}, {rSideLegAngle:-15, rSideLegBend:5, lSideLegAngle:-55, lSideLegBend:55}, {lSideLegAngle:20, lSideLegBend:-15, rSideLegAngle:-15, rSideLegBend:5} ] },
+    { name: 'ストップ＆ゴー', desc: 'サイドステップから静止と再開を繰り返す',
+      tip: '身体全体ではなく腰から体重移動し、上半身は後からついてくるように。',
+      cues: ['リラックスして肘から動かす', '右足を後ろへ引き、体を横に向ける', '前に踏み込んで正面に戻る', '腰から体重移動して仕上げる'],
+      poses: [ {}, {torsoLean:12, rHip:-30}, {torsoLean:0, rHip:10}, {lHip:15, rHip:-15, bodyY:4} ],
+      feet: [ {}, {r:{x:105,y:115}}, {r:{x:100,y:95}}, {l:{x:55,y:98,up:true}, r:{x:100,y:100}} ],
+      sidePoses: [ {}, {rSideLegAngle:20, sideLean:8}, {rSideLegAngle:-15, sideLean:-4}, {bodyY:4} ] },
+    { name: 'クラブ', desc: '両膝の開閉で方向を変えるカニ歩き',
+      tip: '膝からではなく腰から動かして、膝を連動させる。',
+      cues: ['両膝を開いて足先を離す', 'かかとをくっつけて戻す', '方向を変えてもう一度開く', '軽く弾みながら繰り返す'],
+      poses: [ {lHip:35, rHip:-35, bodyY:8}, {lHip:10, rHip:-10, bodyY:4}, {lHip:-35, rHip:35, bodyY:8}, {lHip:10, rHip:-10, bodyY:4} ],
+      feet: [ {l:{x:40,y:108}, r:{x:120,y:108}}, {l:{x:65,y:100}, r:{x:95,y:100}}, {l:{x:120,y:108}, r:{x:40,y:108}}, {l:{x:95,y:100}, r:{x:65,y:100}} ],
+      sidePoses: [ {bodyY:8}, {bodyY:4}, {bodyY:8}, {bodyY:4} ] },
+    { name: '腰の動き', desc: '腰を前後・左右に動かすアイソレーション',
+      tip: '入れたい方向と逆側から準備する（＝「エン」のタイミングで逆に振っておく）。',
+      cues: ['腰を前に入れる（上半身は後ろ、首は下向き）', '腰を後ろに入れる（上半身は前、首は上向き）', '腰を右に振る', '腰を左に振り返す'],
+      poses: [ {torsoLean:-12}, {torsoLean:12}, {rHip:-15, lHip:15, bodyY:4}, {rHip:15, lHip:-15, bodyY:4} ],
+      feet: [ {}, {}, {}, {} ],
+      sidePoses: [ {sideLean:-20}, {sideLean:20}, {sideLean:0}, {sideLean:0} ] }
+  ];
+
+  const FALLBACK_LEN = 4;
+  const NEUTRAL = { torsoLean:0, lShoulder:15, lElbow:8, lWrist:15, rShoulder:-15, rElbow:-8, rWrist:-15, lHip:6, lKnee:4, rHip:-6, rKnee:-4, bodyY:0 };
+  const FALLBACK_POSES = [ {}, {bodyY:10}, {}, {bodyY:10} ];
+  const NEUTRAL_FOOT = { l: {x:60,y:100,up:false}, r: {x:100,y:100,up:false} };
+  const SIDE_NEUTRAL = {
+    sideLean: 0,
+    rSideArmAngle: -12, rSideArmBend: 10, lSideArmAngle: -12, lSideArmBend: 10,
+    rSideLegAngle: -6, rSideLegBend: 4, lSideLegAngle: -6, lSideLegBend: 4,
+    bodyY: 0
+  };
+
+  function makeSideFigureController(ids) {
+    const figureRoot = document.getElementById(ids.figureRoot);
+    const torsoGroup = document.getElementById(ids.torsoGroup);
+    const armR = document.getElementById(ids.armR);
+    const forearmR = document.getElementById(ids.forearmR);
+    const armL = document.getElementById(ids.armL);
+    const forearmL = document.getElementById(ids.forearmL);
+    const thighR = document.getElementById(ids.thighR);
+    const shinR = document.getElementById(ids.shinR);
+    const thighL = document.getElementById(ids.thighL);
+    const shinL = document.getElementById(ids.shinL);
+
+    function applyPose(overrides) {
+      const p = Object.assign({}, SIDE_NEUTRAL, overrides);
+      figureRoot.setAttribute('transform', 'translate(0,' + p.bodyY + ')');
+      torsoGroup.setAttribute('transform', 'rotate(' + p.sideLean + ',60,130)');
+      armR.setAttribute('transform', 'translate(57,82) rotate(' + p.rSideArmAngle + ')');
+      forearmR.setAttribute('transform', 'translate(0,34) rotate(' + p.rSideArmBend + ')');
+      armL.setAttribute('transform', 'translate(63,82) rotate(' + p.lSideArmAngle + ')');
+      forearmL.setAttribute('transform', 'translate(0,34) rotate(' + p.lSideArmBend + ')');
+      thighR.setAttribute('transform', 'translate(57,130) rotate(' + p.rSideLegAngle + ')');
+      shinR.setAttribute('transform', 'translate(0,45) rotate(' + p.rSideLegBend + ')');
+      thighL.setAttribute('transform', 'translate(63,130) rotate(' + p.lSideLegAngle + ')');
+      shinL.setAttribute('transform', 'translate(0,45) rotate(' + p.lSideLegBend + ')');
+    }
+
+    return { applyPose };
+  }
+
+  const FALLBACK_FEET = [ {}, {}, {}, {} ];
+
+  function makeFigureController(ids) {
+    const figureBounce = document.getElementById(ids.figureBounce);
+    const figureRoot = document.getElementById(ids.figureRoot);
+    const torsoGroup = document.getElementById(ids.torsoGroup);
+    const leftUpperArm = document.getElementById(ids.leftUpperArm);
+    const leftForearm = document.getElementById(ids.leftForearm);
+    const rightUpperArm = document.getElementById(ids.rightUpperArm);
+    const rightForearm = document.getElementById(ids.rightForearm);
+    const leftPalm = document.getElementById(ids.leftPalm);
+    const rightPalm = document.getElementById(ids.rightPalm);
+    const leftThigh = document.getElementById(ids.leftThigh);
+    const leftShin = document.getElementById(ids.leftShin);
+    const rightThigh = document.getElementById(ids.rightThigh);
+    const rightShin = document.getElementById(ids.rightShin);
+    const leftFootG = document.getElementById(ids.leftFootG);
+    const rightFootG = document.getElementById(ids.rightFootG);
+
+    function applyPose(overrides, withImpact) {
+      const p = Object.assign({}, NEUTRAL, overrides);
+      figureRoot.setAttribute('transform', 'translate(0,' + p.bodyY + ')');
+      torsoGroup.setAttribute('transform', 'rotate(' + p.torsoLean + ',80,130)');
+      leftUpperArm.setAttribute('transform', 'translate(65,82) rotate(' + p.lShoulder + ')');
+      leftForearm.setAttribute('transform', 'translate(0,34) rotate(' + p.lElbow + ')');
+      leftPalm.setAttribute('transform', 'translate(0,30) rotate(' + p.lWrist + ')');
+      rightUpperArm.setAttribute('transform', 'translate(95,82) rotate(' + p.rShoulder + ')');
+      rightForearm.setAttribute('transform', 'translate(0,34) rotate(' + p.rElbow + ')');
+      rightPalm.setAttribute('transform', 'translate(0,30) rotate(' + p.rWrist + ')');
+      leftThigh.setAttribute('transform', 'translate(70,130) rotate(' + p.lHip + ')');
+      leftShin.setAttribute('transform', 'translate(0,45) rotate(' + p.lKnee + ')');
+      rightThigh.setAttribute('transform', 'translate(90,130) rotate(' + p.rHip + ')');
+      rightShin.setAttribute('transform', 'translate(0,45) rotate(' + p.rKnee + ')');
+      if (withImpact) {
+        figureBounce.classList.remove('impact');
+        void figureBounce.getBBox(); // force reflow so the animation retriggers every time
+        figureBounce.classList.add('impact');
+      }
+    }
+
+    function applyFeet(overrides) {
+      const l = Object.assign({}, NEUTRAL_FOOT.l, overrides.l || {});
+      const r = Object.assign({}, NEUTRAL_FOOT.r, overrides.r || {});
+      leftFootG.setAttribute('transform', 'translate(' + l.x + ',' + l.y + ')');
+      rightFootG.setAttribute('transform', 'translate(' + r.x + ',' + r.y + ')');
+      leftFootG.classList.toggle('lifted', !!l.up);
+      rightFootG.classList.toggle('lifted', !!r.up);
+    }
+
+    return { applyPose, applyFeet, els: { leftForearm, rightForearm, leftFootG, rightFootG, figureRoot } };
+  }
+
+  const practiceFigure = makeFigureController({
+    figureBounce: 'figureBounce', figureRoot: 'figureRoot', torsoGroup: 'torsoGroup',
+    leftUpperArm: 'leftUpperArm', leftForearm: 'leftForearm', rightUpperArm: 'rightUpperArm', rightForearm: 'rightForearm',
+    leftPalm: 'leftPalm', rightPalm: 'rightPalm',
+    leftThigh: 'leftThigh', leftShin: 'leftShin', rightThigh: 'rightThigh', rightShin: 'rightShin',
+    leftFootG: 'leftFootG', rightFootG: 'rightFootG'
+  });
+  function applyPose(overrides, withImpact) { practiceFigure.applyPose(overrides, withImpact); }
+  function applyFeet(overrides) { practiceFigure.applyFeet(overrides); }
+
+  const practiceSideFigure = makeSideFigureController({
+    figureRoot: 'sideFigureRoot', torsoGroup: 'sideTorsoGroup',
+    armR: 'sideArmR', forearmR: 'sideForearmR', armL: 'sideArmL', forearmL: 'sideForearmL',
+    thighR: 'sideThighR', shinR: 'sideShinR', thighL: 'sideThighL', shinL: 'sideShinL'
+  });
+  function applySidePose(overrides) { practiceSideFigure.applyPose(overrides); }
+  function getSidePose(move, countInMove) {
+    if (!move.sidePoses || !move.sidePoses.length) return {};
+    return move.sidePoses[countInMove % move.sidePoses.length];
+  }
+
+
+  const miniMover = document.getElementById('miniMover');
+  const beatFootL = document.getElementById('beatFootL');
+  const beatFootR = document.getElementById('beatFootR');
+  const rhythmBadgeLabel = document.getElementById('rhythmBadgeLabel');
+
+  let seqRhythmMode = 'down'; // 'down' | 'up' — applies to the whole set list
+  let seqRhythmSixteen = false; // independent 16-beat tempo flag for the whole set list
+  const seqModeRow = document.getElementById('seqModeRow');
+  const seqSixteenToggle = document.getElementById('seqSixteenToggle');
+
+  seqModeRow.addEventListener('click', (e) => {
+    const btn = e.target.closest('.mode-btn');
+    if (!btn || btn.dataset.mode === seqRhythmMode) return;
+    seqRhythmMode = btn.dataset.mode;
+    [...seqModeRow.children].forEach(b => b.classList.toggle('active', b.dataset.mode === seqRhythmMode));
+    applyRhythmBadge();
+  });
+
+  seqSixteenToggle.addEventListener('change', () => {
+    seqRhythmSixteen = seqSixteenToggle.checked;
+    applyRhythmBadge();
+  });
+
+  function applyRhythmBadge() {
+    miniMover.classList.toggle('down', seqRhythmMode === 'down');
+    rhythmBadgeLabel.classList.toggle('down', seqRhythmMode === 'down');
+    rhythmBadgeLabel.textContent = (seqRhythmMode === 'down' ? 'DOWN' : 'UP') + (seqRhythmSixteen ? ' ×16' : '');
+    beatFootL.classList.toggle('enabled', seqRhythmSixteen);
+    beatFootR.classList.toggle('enabled', seqRhythmSixteen);
+  }
+
+  function bounceFeetPair(elA, elB) {
+    [elA, elB].forEach(el => {
+      el.classList.remove('bounce');
+      void el.offsetWidth; // force reflow so the animation retriggers every time
+      el.classList.add('bounce');
+    });
+  }
+  function bounceBeatFeet() { bounceFeetPair(beatFootL, beatFootR); }
+
+  function fireRhythmBadge() {
+    const stepMs = (60 / bpm) * 1000;
+    miniMover.style.animationDuration = Math.min(500, stepMs * 0.85) + 'ms';
+    miniMover.classList.remove('hit-down', 'hit-up');
+    void miniMover.offsetWidth; // force reflow so the animation retriggers every time
+    miniMover.classList.add(seqRhythmMode === 'down' ? 'hit-down' : 'hit-up');
+  }
+
+  function cycleLenFor(item) {
+    return (item.cues && item.cues.length) || FALLBACK_LEN;
+  }
+
+  let sequence = []; // { name, counts, cues, poses, feet }
+  let seqIndex = 0;
+  let seqCountInMove = 0;
+
+  let CUSTOM_MOVES = [];
+
+  function addLibraryButton(move) {
+    const b = document.createElement('button');
+    b.className = 'library-btn';
+    b.innerHTML = '<span class="lib-name">' + move.name + '</span><span class="lib-desc">' + move.desc + '</span>';
+    b.addEventListener('click', () => {
+      const item = { name: move.name, cues: move.cues, poses: move.poses, feet: move.feet, tip: move.tip, sidePoses: move.sidePoses };
+      item.counts = cycleLenFor(item);
+      sequence.push(item);
+      renderSequence();
+      if (!playing) renderChoreoIdle();
+    });
+    libraryGrid.appendChild(b);
+  }
+
+  function renderLibraryGrid() {
+    libraryGrid.innerHTML = '';
+    MOVE_LIBRARY.forEach(addLibraryButton);
+    if (CUSTOM_MOVES.length) {
+      const divider = document.createElement('div');
+      divider.className = 'section-label';
+      divider.style.width = '100%';
+      divider.style.margin = '4px 0 0';
+      divider.textContent = '自分の技（技を作るから作成）';
+      libraryGrid.appendChild(divider);
+      CUSTOM_MOVES.forEach(addLibraryButton);
+    }
+  }
+  renderLibraryGrid();
+
+  addCustomBtn.addEventListener('click', () => {
+    const name = customMoveInput.value.trim();
+    if (!name) return;
+    sequence.push({ name, counts: FALLBACK_LEN, cues: [], poses: null, feet: null, tip: '' });
+    customMoveInput.value = '';
+    renderSequence();
+    if (!playing) renderChoreoIdle();
+  });
+  customMoveInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addCustomBtn.click();
+  });
+
+  function renderSequence() {
+    sequenceList.innerHTML = '';
+    sequenceEmpty.style.display = sequence.length ? 'none' : 'block';
+    sequence.forEach((item, i) => {
+      const card = document.createElement('div');
+      card.className = 'sequence-item' + (playing && i === seqIndex ? ' current' : '');
+
+      const row1 = document.createElement('div');
+      row1.className = 'sequence-item-row';
+
+      const idx = document.createElement('div');
+      idx.className = 'seq-index';
+      idx.textContent = i + 1;
+
+      const name = document.createElement('div');
+      name.className = 'seq-name';
+      name.textContent = item.name + (item.cues && item.cues.length ? '' : '（動作メモ未設定）');
+
+      const cyc = cycleLenFor(item);
+      const counts = document.createElement('select');
+      counts.className = 'seq-counts';
+      [cyc, cyc * 2, cyc * 4].forEach((c, repeatIdx) => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c + '拍（' + [1, 2, 4][repeatIdx] + '周）';
+        if (c === item.counts) opt.selected = true;
+        counts.appendChild(opt);
+      });
+      counts.addEventListener('change', () => { item.counts = parseInt(counts.value, 10); });
+
+      const up = document.createElement('button');
+      up.className = 'seq-btn';
+      up.textContent = '↑';
+      up.addEventListener('click', () => {
+        if (i === 0) return;
+        [sequence[i - 1], sequence[i]] = [sequence[i], sequence[i - 1]];
+        renderSequence();
+        if (!playing) renderChoreoIdle();
+      });
+
+      const down = document.createElement('button');
+      down.className = 'seq-btn';
+      down.textContent = '↓';
+      down.addEventListener('click', () => {
+        if (i === sequence.length - 1) return;
+        [sequence[i + 1], sequence[i]] = [sequence[i], sequence[i + 1]];
+        renderSequence();
+        if (!playing) renderChoreoIdle();
+      });
+
+      const del = document.createElement('button');
+      del.className = 'seq-btn';
+      del.textContent = '×';
+      del.addEventListener('click', () => {
+        sequence.splice(i, 1);
+        renderSequence();
+        if (!playing) renderChoreoIdle();
+      });
+
+      row1.append(idx, name, counts, up, down, del);
+
+      card.append(row1);
+      sequenceList.appendChild(card);
+    });
+  }
+
+  function getCue(move, countInMove) {
+    if (!move.cues || !move.cues.length) return 'その場でリズムを取りながら行う';
+    return move.cues[countInMove % move.cues.length];
+  }
+
+  function getPose(move, countInMove) {
+    const poses = (move.poses && move.poses.length) ? move.poses : FALLBACK_POSES;
+    return poses[countInMove % poses.length];
+  }
+
+  function getFeet(move, countInMove) {
+    const feet = (move.feet && move.feet.length) ? move.feet : FALLBACK_FEET;
+    return feet[countInMove % feet.length];
+  }
+
+  function renderRoadmap(highlightIndex) {
+    roadmap.innerHTML = '';
+    if (!sequence.length) return;
+    sequence.forEach((item, i) => {
+      const pill = document.createElement('div');
+      pill.className = 'roadmap-pill' + (i === highlightIndex ? ' current' : '');
+      pill.textContent = (i + 1) + '. ' + item.name;
+      roadmap.appendChild(pill);
+    });
+  }
+
+  let choreoCountMoveRef = null;
+  let choreoCountDots = [];
+
+  function ensureChoreoCountRow(move) {
+    if (move === choreoCountMoveRef) return;
+    choreoCountMoveRef = move;
+    choreoProgress.innerHTML = '';
+    choreoCountDots = [];
+    const total = move.counts * 2;
+    for (let i = 0; i < total; i++) {
+      const d = document.createElement('div');
+      const isOffBeat = i % 2 === 1;
+      d.className = 'count-dot' + (i === 0 ? ' one' : '') + (isOffBeat ? ' off-beat' : '');
+      d.textContent = isOffBeat ? '&' : String(i / 2 + 1);
+      choreoProgress.appendChild(d);
+      choreoCountDots.push(d);
+    }
+  }
+
+  function highlightChoreoCount(halfIndex) {
+    choreoCountDots.forEach(d => d.classList.remove('active', 'down'));
+    const d = choreoCountDots[halfIndex];
+    if (d) {
+      d.classList.add('active');
+      if (halfIndex % 2 === 0 && seqRhythmMode === 'down') d.classList.add('down');
+    }
+  }
+
+  function renderChoreoIdle() {
+    choreoEyebrow.textContent = sequence.length ? 'スタート待ち' : 'セットリストが空です';
+    choreoCurrent.textContent = sequence.length ? sequence[0].name : '技を追加してください';
+    renderRoadmap(sequence.length ? 0 : -1);
+    if (sequence.length) {
+      choreoCue.textContent = getCue(sequence[0], 0);
+      choreoTip.textContent = sequence[0].tip ? 'コツ: ' + sequence[0].tip : '';
+      applyPose(getPose(sequence[0], 0), false);
+      applyFeet(getFeet(sequence[0], 0));
+      applySidePose(getSidePose(sequence[0], 0));
+      applyRhythmBadge();
+      choreoCountMoveRef = null;
+      ensureChoreoCountRow(sequence[0]);
+      highlightChoreoCount(startOnAndToggle.checked ? 1 : 0);
+    } else {
+      choreoCue.textContent = '';
+      choreoTip.textContent = '';
+      applyPose({}, false);
+      applyFeet({});
+      applySidePose({});
+      applyRhythmBadge();
+      choreoProgress.innerHTML = '';
+      choreoCountDots = [];
+      choreoCountMoveRef = null;
+    }
+    choreoNext.textContent = sequence.length > 1 ? '次: ' + sequence[1].name : '';
+  }
+
+  function renderChoreoRunning() {
+    const move = sequence[seqIndex];
+    choreoEyebrow.textContent = (seqIndex + 1) + ' / ' + sequence.length;
+    choreoCurrent.textContent = move.name;
+    choreoCue.textContent = getCue(move, seqCountInMove);
+    choreoTip.textContent = move.tip ? 'コツ: ' + move.tip : '';
+    applyRhythmBadge();
+    renderRoadmap(seqIndex);
+    ensureChoreoCountRow(move);
+    highlightChoreoCount(seqCountInMove * 2);
+    const nextMove = sequence[(seqIndex + 1) % sequence.length];
+    choreoNext.textContent = '次: ' + nextMove.name;
+    renderSequence();
+  }
+
+  function fireChoreoTick() {
+    const move = sequence[seqIndex];
+    click(seqCountInMove === 0 ? 660 : 440);
+    applyPose(getPose(move, seqCountInMove), true);
+    applyFeet(getFeet(move, seqCountInMove));
+    applySidePose(getSidePose(move, seqCountInMove));
+    fireRhythmBadge();
+    renderChoreoRunning();
+    seqCountInMove++;
+    if (seqCountInMove >= move.counts) {
+      seqCountInMove = 0;
+      seqIndex = (seqIndex + 1) % sequence.length;
+    }
+  }
+
+  let practiceHalfBeat = 0; // even = main count ("1,2,3..."), odd = "and"
+  let pendingPickup = false; // true for one tick: a pickup "&" before count 1
+
+  let lastMainMove = null;
+  let lastMainCount = 0;
+
+  function firePracticeHalfBeat() {
+    if (pendingPickup) {
+      pendingPickup = false;
+      fireRhythmBadge();
+      bounceBeatFeet();
+      if (seqRhythmSixteen) click(500);
+      return;
+    }
+    const isAnd = practiceHalfBeat % 2 === 1;
+    if (isAnd) {
+      if (lastMainMove) {
+        ensureChoreoCountRow(lastMainMove);
+        highlightChoreoCount(lastMainCount * 2 + 1);
+      }
+      bounceBeatFeet();
+      if (seqRhythmSixteen) click(500);
+    } else {
+      lastMainMove = sequence[seqIndex];
+      lastMainCount = seqCountInMove;
+      bounceBeatFeet();
+      fireChoreoTick();
+    }
+    practiceHalfBeat++;
+  }
+
+
+  // ================= SHARED TRANSPORT =================
+  let nextTickTime = 0;
+
+  function loop() {
+    if (!playing) return;
+    const now = audioCtx.currentTime;
+    if (now >= nextTickTime) {
+      if (activeTab === 'rhythm') {
+        fireRhythmStep();
+        const interval = (60 / bpm) / 2;
+        nextTickTime += interval;
+        if (now - nextTickTime > interval) nextTickTime = now + interval;
+      } else {
+        firePracticeHalfBeat();
+        const interval = (60 / bpm) / 2;
+        nextTickTime += interval;
+        if (now - nextTickTime > interval) nextTickTime = now + interval;
+      }
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function startPlayback() {
+    if (activeTab === 'practice' && sequence.length === 0) {
+      sequenceEmpty.textContent = 'まずは技をタップしてセットリストに追加してください。';
+      sequenceEmpty.style.display = 'block';
+      return;
+    }
+    ensureAudio();
+    playing = true;
+    if (activeTab === 'rhythm') {
+      rStepIndex = 0;
+    } else {
+      seqIndex = 0;
+      seqCountInMove = 0;
+      practiceHalfBeat = 0;
+      pendingPickup = startOnAndToggle.checked;
+      renderChoreoRunning();
+      if (pendingPickup) highlightChoreoCount(1);
+    }
+    nextTickTime = audioCtx.currentTime + 0.05;
+    playBtn.textContent = '■ 停止';
+    playBtn.classList.add('playing');
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function stopPlayback() {
+    playing = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    playBtn.textContent = '▶ 再生';
+    playBtn.classList.remove('playing');
+    resetRhythmVisuals();
+    renderChoreoIdle();
+  }
+
+  playBtn.addEventListener('click', () => { playing ? stopPlayback() : startPlayback(); });
+
+  startOnAndToggle.addEventListener('change', () => { if (!playing) renderChoreoIdle(); });
+
+  // tap tempo (shared)
+  let tapTimes = [];
+  tapBtn.addEventListener('click', () => {
+    const now = performance.now();
+    tapTimes.push(now);
+    tapTimes = tapTimes.filter(t => now - t < 3000);
+    if (tapTimes.length >= 2) {
+      const intervals = [];
+      for (let i = 1; i < tapTimes.length; i++) intervals.push(tapTimes[i] - tapTimes[i - 1]);
+      const avgMs = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+      setBpm(Math.round(60000 / avgMs));
+    }
+    tapBtn.textContent = tapTimes.length === 1 ? 'もう一度タップ' : 'タップでBPM';
+  });
+
+  // ================= NOTATION SHEET =================
+  const notationGridEl = document.getElementById('notationGrid');
+  const notationScroll = document.getElementById('notationScroll');
+  const notationPreviewLabel = document.getElementById('notationPreviewLabel');
+  const notatHandZones = document.getElementById('notatHandZones');
+  const notatFootZones = document.getElementById('notatFootZones');
+  const notationPlayStart = document.getElementById('notationPlayStart');
+  const notationPlayEnd = document.getElementById('notationPlayEnd');
+  const notationPlayBtn = document.getElementById('notationPlayBtn');
+  const notationRegNote = document.getElementById('notationRegNote');
+  const notationFigure = makeFigureController({
+    figureBounce: 'notatFigureBounce', figureRoot: 'notatFigureRoot', torsoGroup: 'notatTorsoGroup',
+    leftUpperArm: 'notatLeftUpperArm', leftForearm: 'notatLeftForearm', rightUpperArm: 'notatRightUpperArm', rightForearm: 'notatRightForearm',
+    leftPalm: 'notatLeftPalm', rightPalm: 'notatRightPalm',
+    leftThigh: 'notatLeftThigh', leftShin: 'notatLeftShin', rightThigh: 'notatRightThigh', rightShin: 'notatRightShin',
+    leftFootG: 'notatLeftFootG', rightFootG: 'notatRightFootG'
+  });
+  const notationSideFigure = makeSideFigureController({
+    figureRoot: 'notatSideFigureRoot', torsoGroup: 'notatSideTorsoGroup',
+    armR: 'notatSideArmR', forearmR: 'notatSideForearmR', armL: 'notatSideArmL', forearmL: 'notatSideForearmL',
+    thighR: 'notatSideThighR', shinR: 'notatSideShinR', thighL: 'notatSideThighL', shinL: 'notatSideShinL'
+  });
+  const notationCountsDisplay = document.getElementById('notationCountsDisplay');
+  const notationCountsMinus = document.getElementById('notationCountsMinus');
+  const notationCountsPlus = document.getElementById('notationCountsPlus');
+  const notationEditorLabel = document.getElementById('notationEditorLabel');
+  const notationPalette = document.getElementById('notationPalette');
+  const notationTextInput = document.getElementById('notationTextInput');
+
+  const NOTATION_ROWS = [
+    { key: 'move', label: '技', palette: MOVE_LIBRARY.map(m => m.name) },
+    { key: 'rHand', label: '右手' },
+    { key: 'lHand', label: '左手' },
+    { key: 'rFoot', label: '右足' },
+    { key: 'lFoot', label: '左足' },
+    { key: 'memo', label: 'メモ', palette: [] }
+  ];
+
+  function isFootRow(rowKey) { return rowKey === 'rFoot' || rowKey === 'lFoot'; }
+  function isHandRow(rowKey) { return rowKey === 'rHand' || rowKey === 'lHand'; }
+
+  const POS_GRID = [ ['FL','F','FR'], ['L','C','R'], ['BL','B','BR'] ];
+  const POS_COORD = { FL:[7,7], F:[15,7], FR:[23,7], L:[7,15], C:[15,15], R:[23,15], BL:[7,23], B:[15,23], BR:[23,23] };
+  const FOOT_POS_LABEL = { FL:'左前', F:'前', FR:'右前', L:'左', C:'中央', R:'右', BL:'左後', B:'後ろ', BR:'右後' };
+  const HAND_POS_LABEL = { FL:'左上', F:'上', FR:'右上', L:'左横', C:'前', R:'右横', BL:'左下', B:'下ろす', BR:'右下' };
+
+  // Maps an absolute compass position to right-arm shoulder/elbow angles.
+  // Left-arm angles are derived by mirroring both the key (L<->R, FL<->FR, BL<->BR) and the sign.
+  const RIGHT_ARM_ANGLE = {
+    B:  { shoulder:-15,  elbow:-8 },
+    BR: { shoulder:-45,  elbow:0 },
+    R:  { shoulder:-90,  elbow:0 },
+    FR: { shoulder:-135, elbow:0 },
+    F:  { shoulder:-170, elbow:10 },
+    FL: { shoulder:130,  elbow:-40 },
+    L:  { shoulder:80,   elbow:-60 },
+    BL: { shoulder:30,   elbow:-50 },
+    C:  { shoulder:-90,  elbow:-90 }
+  };
+  const POS_MIRROR = { F:'F', B:'B', C:'C', L:'R', R:'L', FL:'FR', FR:'FL', BL:'BR', BR:'BL' };
+
+  function armAngleFor(isLeft, posKey) {
+    if (!isLeft) return RIGHT_ARM_ANGLE[posKey] || RIGHT_ARM_ANGLE.B;
+    const src = RIGHT_ARM_ANGLE[POS_MIRROR[posKey]] || RIGHT_ARM_ANGLE.B;
+    return { shoulder: -src.shoulder, elbow: -src.elbow };
+  }
+
+  const WRIST_LABEL = { straight: 'まっすぐ', natural: '90度', reverse: '逆90度', folded: '折りたたむ' };
+  function wristAngleFor(isLeft, wrist) {
+    if (wrist === 'straight') return 0;
+    if (wrist === 'reverse') return isLeft ? -90 : 90;
+    if (wrist === 'folded') return 180;
+    return isLeft ? 90 : -90; // 'natural' (default)
+  }
+
+  const DEPTH_LABEL = { front: '前', neutral: '中間', back: '後ろ' };
+  const HAND_DEPTH_ANGLE = { front: -90, neutral: -12, back: 60 };
+  function sideArmAngleForDepth(depth) {
+    return HAND_DEPTH_ANGLE[depth] !== undefined ? HAND_DEPTH_ANGLE[depth] : HAND_DEPTH_ANGLE.neutral;
+  }
+  function classifyDepth(sideAngleVal) {
+    if (sideAngleVal === undefined) return 'neutral';
+    const dFront = Math.abs(sideAngleVal - HAND_DEPTH_ANGLE.front);
+    const dBack = Math.abs(sideAngleVal - HAND_DEPTH_ANGLE.back);
+    const dNeutral = Math.abs(sideAngleVal - HAND_DEPTH_ANGLE.neutral);
+    if (dFront <= dBack && dFront <= dNeutral) return 'front';
+    if (dBack <= dFront && dBack <= dNeutral) return 'back';
+    return 'neutral';
+  }
+
+  // Feet already store a front-back position (their y coordinate), so the side-view
+  // leg angle can be derived automatically without any extra notation input.
+  function sideLegAngleFromFootY(y) {
+    const clamped = Math.max(70, Math.min(130, y));
+    return -70 + (clamped - 70) * (95 / 60); // y:70(front)->-70, y:130(back)->+25
+  }
+  function sideLegBendFromUp(up) { return up ? 35 : 5; }
+
+  function sideForColumn(col) {
+    const p = {};
+    const rH = notationCells[notationKey('rHand', col)];
+    if (rH) p.rSideArmAngle = sideArmAngleForDepth(rH.depth);
+    const lH = notationCells[notationKey('lHand', col)];
+    if (lH) p.lSideArmAngle = sideArmAngleForDepth(lH.depth);
+    const rF = notationCells[notationKey('rFoot', col)];
+    if (rF) {
+      const xy = RIGHT_FOOT_XY[rF.pos] || RIGHT_FOOT_XY.C;
+      p.rSideLegAngle = sideLegAngleFromFootY(xy[1]);
+      p.rSideLegBend = sideLegBendFromUp(rF.up);
+    }
+    const lF = notationCells[notationKey('lFoot', col)];
+    if (lF) {
+      const xy = LEFT_FOOT_XY[lF.pos] || LEFT_FOOT_XY.C;
+      p.lSideLegAngle = sideLegAngleFromFootY(xy[1]);
+      p.lSideLegBend = sideLegBendFromUp(lF.up);
+    }
+    return p;
+  }
+
+  function nearestArmPos(isLeft, shoulder, elbow) {
+    let best = 'C', bestDist = Infinity;
+    POS_GRID.flat().forEach(key => {
+      const a = armAngleFor(isLeft, key);
+      const d = Math.pow(a.shoulder - shoulder, 2) + Math.pow(a.elbow - elbow, 2);
+      if (d < bestDist) { bestDist = d; best = key; }
+    });
+    return best;
+  }
+
+  function classifyWrist(isLeft, wristVal) {
+    if (wristVal === undefined) return 'natural';
+    if (Math.abs(wristVal) < 30) return 'straight';
+    if (Math.abs(Math.abs(wristVal) - 180) < 30) return 'folded';
+    const natural = wristAngleFor(isLeft, 'natural');
+    const reverse = wristAngleFor(isLeft, 'reverse');
+    return Math.abs(wristVal - natural) <= Math.abs(wristVal - reverse) ? 'natural' : 'reverse';
+  }
+
+  function nearestFootPos(isLeft, x, y) {
+    const table = isLeft ? LEFT_FOOT_XY : RIGHT_FOOT_XY;
+    let best = 'C', bestDist = Infinity;
+    Object.keys(table).forEach(key => {
+      const [tx, ty] = table[key];
+      const d = Math.pow(tx - x, 2) + Math.pow(ty - y, 2);
+      if (d < bestDist) { bestDist = d; best = key; }
+    });
+    return best;
+  }
+
+  // Top-down floor coordinates for each foot's absolute compass position.
+  const RIGHT_FOOT_XY = { C:[100,100], F:[100,70], B:[100,130], L:[70,90], R:[130,90], FL:[80,75], FR:[120,75], BL:[80,125], BR:[120,125] };
+  const LEFT_FOOT_XY  = { C:[60,100],  F:[60,70],  B:[60,130],  L:[30,90], R:[90,90], FL:[40,75], FR:[80,75], BL:[40,125], BR:[80,125] };
+
+  function cueForColumn(col) {
+    const parts = [];
+    const moveVal = notationCells[notationKey('move', col)];
+    if (moveVal) parts.push(moveVal);
+    const rH = notationCells[notationKey('rHand', col)];
+    if (rH) parts.push('右手:' + HAND_POS_LABEL[rH.pos] + (rH.wrist === 'straight' ? '(まっすぐ)' : rH.wrist === 'reverse' ? '(逆手首)' : '') + (rH.depth === 'front' ? '(前)' : rH.depth === 'back' ? '(後ろ)' : ''));
+    const lH = notationCells[notationKey('lHand', col)];
+    if (lH) parts.push('左手:' + HAND_POS_LABEL[lH.pos] + (lH.wrist === 'straight' ? '(まっすぐ)' : lH.wrist === 'reverse' ? '(逆手首)' : '') + (lH.depth === 'front' ? '(前)' : lH.depth === 'back' ? '(後ろ)' : ''));
+    const rF = notationCells[notationKey('rFoot', col)];
+    if (rF) parts.push('右足:' + FOOT_POS_LABEL[rF.pos] + (rF.up ? '(浮)' : ''));
+    const lF = notationCells[notationKey('lFoot', col)];
+    if (lF) parts.push('左足:' + FOOT_POS_LABEL[lF.pos] + (lF.up ? '(浮)' : ''));
+    const memoVal = notationCells[notationKey('memo', col)];
+    if (memoVal) parts.push(memoVal);
+    return parts.length ? parts.join(' / ') : 'その場でキープ';
+  }
+
+  function poseForColumn(col) {
+    const p = {};
+    const rH = notationCells[notationKey('rHand', col)];
+    if (rH) { const a = armAngleFor(false, rH.pos); p.rShoulder = a.shoulder; p.rElbow = a.elbow; p.rWrist = wristAngleFor(false, rH.wrist); }
+    const lH = notationCells[notationKey('lHand', col)];
+    if (lH) { const a = armAngleFor(true, lH.pos); p.lShoulder = a.shoulder; p.lElbow = a.elbow; p.lWrist = wristAngleFor(true, lH.wrist); }
+    return p;
+  }
+
+  function feetForColumn(col) {
+    const f = {};
+    const rF = notationCells[notationKey('rFoot', col)];
+    if (rF) { const xy = RIGHT_FOOT_XY[rF.pos] || RIGHT_FOOT_XY.C; f.r = { x: xy[0], y: xy[1], up: rF.up }; }
+    const lF = notationCells[notationKey('lFoot', col)];
+    if (lF) { const xy = LEFT_FOOT_XY[lF.pos] || LEFT_FOOT_XY.C; f.l = { x: xy[0], y: xy[1], up: lF.up }; }
+    return f;
+  }
+
+  function ensureNotationCapacity(neededCols) {
+    if (neededCols > notationCounts) {
+      notationCounts = Math.ceil(neededCols / 4) * 4;
+      renderNotationRegisterSelects();
+    }
+  }
+
+  function fillFromCustomMove(mv, startCol) {
+    Object.keys(mv.sourceCells).forEach(key => {
+      const dash = key.indexOf('-');
+      const rowKey = key.slice(0, dash);
+      const relCol = parseInt(key.slice(dash + 1), 10);
+      notationCells[notationKey(rowKey, startCol + relCol)] = mv.sourceCells[key];
+    });
+  }
+
+  function fillFromLibraryMove(mv, startCol) {
+    const len = mv.poses.length;
+    for (let i = 0; i < len; i++) {
+      const col = startCol + i;
+      const stage = mv.poses[i] || {};
+      const footStage = mv.feet[i] || {};
+      const sideStage = (mv.sidePoses && mv.sidePoses[i]) || {};
+      if ('rShoulder' in stage || 'rElbow' in stage || 'rWrist' in stage) {
+        const merged = Object.assign({}, NEUTRAL, stage);
+        notationCells[notationKey('rHand', col)] = { pos: nearestArmPos(false, merged.rShoulder, merged.rElbow), wrist: classifyWrist(false, stage.rWrist), depth: classifyDepth(sideStage.rSideArmAngle) };
+      }
+      if ('lShoulder' in stage || 'lElbow' in stage || 'lWrist' in stage) {
+        const merged = Object.assign({}, NEUTRAL, stage);
+        notationCells[notationKey('lHand', col)] = { pos: nearestArmPos(true, merged.lShoulder, merged.lElbow), wrist: classifyWrist(true, stage.lWrist), depth: classifyDepth(sideStage.lSideArmAngle) };
+      }
+      if (footStage.r) notationCells[notationKey('rFoot', col)] = { pos: nearestFootPos(false, footStage.r.x, footStage.r.y), up: !!footStage.r.up };
+      if (footStage.l) notationCells[notationKey('lFoot', col)] = { pos: nearestFootPos(true, footStage.l.x, footStage.l.y), up: !!footStage.l.up };
+    }
+  }
+
+  function applyTechniqueToNotation(name, startCol) {
+    const custom = CUSTOM_MOVES.find(m => m.name === name);
+    const lib = custom ? null : MOVE_LIBRARY.find(m => m.name === name);
+    const len = custom ? custom.sourceLen : (lib ? lib.poses.length : 1);
+    ensureNotationCapacity(startCol + len);
+    for (let i = 0; i < len; i++) notationCells[notationKey('move', startCol + i)] = name;
+    if (custom) fillFromCustomMove(custom, startCol);
+    else if (lib) fillFromLibraryMove(lib, startCol);
+    selectNotationCell('move', startCol);
+  }
+
+  // ---------- live preview + direct-manipulation tap zones ----------
+  const FIG_SCALE_X = 86 / 160;
+  const FIG_SCALE_Y = 118 / 220;
+  const FOOT_SCALE = 86 / 160;
+
+  function armEndpoint(isLeft, posKey) {
+    const pivot = isLeft ? [65, 82] : [95, 82];
+    const a = armAngleFor(isLeft, posKey);
+    const shoulderRad = a.shoulder * Math.PI / 180;
+    const elbow = [pivot[0] - 34 * Math.sin(shoulderRad), pivot[1] + 34 * Math.cos(shoulderRad)];
+    const totalRad = (a.shoulder + a.elbow) * Math.PI / 180;
+    return [elbow[0] - 30 * Math.sin(totalRad), elbow[1] + 30 * Math.cos(totalRad)];
+  }
+
+  function currentPreviewCol() { return notationActive ? notationActive.col : 0; }
+
+  function tapNotationHand(isLeft, posKey) {
+    const rowKey = isLeft ? 'lHand' : 'rHand';
+    const col = currentPreviewCol();
+    const key = notationKey(rowKey, col);
+    const prev = notationCells[key] || { pos: 'C', wrist: 'natural', depth: 'neutral' };
+    notationCells[key] = { pos: posKey, wrist: prev.wrist, depth: prev.depth };
+    selectNotationCell(rowKey, col);
+  }
+
+  function tapNotationFoot(isLeft, posKey) {
+    const rowKey = isLeft ? 'lFoot' : 'rFoot';
+    const col = currentPreviewCol();
+    const key = notationKey(rowKey, col);
+    const prev = notationCells[key] || { pos: 'C', up: false };
+    notationCells[key] = { pos: posKey, up: prev.up };
+    selectNotationCell(rowKey, col);
+  }
+
+  function buildHandZones() {
+    notatHandZones.innerHTML = '';
+    if (!notationActive || !isHandRow(notationActive.rowKey)) return;
+    const col = currentPreviewCol();
+    const isLeft = notationActive.rowKey === 'lHand';
+    const val = notationCells[notationKey(notationActive.rowKey, col)];
+    const current = val && val.pos;
+    POS_GRID.flat().forEach(posKey => {
+      const [sx, sy] = armEndpoint(isLeft, posKey);
+      const zone = document.createElement('div');
+      zone.className = 'notat-tap-zone' + (current === posKey ? ' current' : '');
+      zone.style.left = (sx * FIG_SCALE_X) + 'px';
+      zone.style.top = (sy * FIG_SCALE_Y) + 'px';
+      zone.title = (isLeft ? '左手' : '右手') + ': ' + HAND_POS_LABEL[posKey];
+      zone.addEventListener('click', () => tapNotationHand(isLeft, posKey));
+      notatHandZones.appendChild(zone);
+    });
+  }
+
+  function buildFootZones() {
+    notatFootZones.innerHTML = '';
+    if (!notationActive || !isFootRow(notationActive.rowKey)) return;
+    const col = currentPreviewCol();
+    const isLeft = notationActive.rowKey === 'lFoot';
+    const val = notationCells[notationKey(notationActive.rowKey, col)];
+    const current = val && val.pos;
+    const table = isLeft ? LEFT_FOOT_XY : RIGHT_FOOT_XY;
+    Object.keys(table).forEach(posKey => {
+      const [sx, sy] = table[posKey];
+      const zone = document.createElement('div');
+      zone.className = 'notat-tap-zone' + (current === posKey ? ' current' : '');
+      zone.style.left = (sx * FOOT_SCALE) + 'px';
+      zone.style.top = (sy * FOOT_SCALE) + 'px';
+      zone.title = (isLeft ? '左足' : '右足') + ': ' + FOOT_POS_LABEL[posKey];
+      zone.addEventListener('click', () => tapNotationFoot(isLeft, posKey));
+      notatFootZones.appendChild(zone);
+    });
+  }
+
+  function refreshNotationPreview() {
+    const col = currentPreviewCol();
+    notationPreviewLabel.textContent = 'プレビュー：' + (col + 1) + '拍目';
+    notationFigure.applyPose(poseForColumn(col), false);
+    notationFigure.applyFeet(feetForColumn(col));
+    notationSideFigure.applyPose(sideForColumn(col));
+    buildHandZones();
+    buildFootZones();
+  }
+
+  // ---------- notation preview playback ----------
+  let notationPlaying = false;
+  let notationPlayTimer = null;
+  let notationPlayCol = 0;
+  let notationPlayRangeStart = 0;
+  let notationPlayRangeEnd = 0;
+
+  function highlightNotationCol(col) {
+    notationGridEl.querySelectorAll('.playing-col').forEach(el => el.classList.remove('playing-col'));
+    notationGridEl.querySelectorAll('[data-col="' + col + '"]').forEach(el => el.classList.add('playing-col'));
+    const headerCell = notationGridEl.querySelector('.notation-col-num[data-col="' + col + '"]');
+    if (!headerCell) return;
+    const labelWidth = 58; // sticky row-label column width, which visually eats into the left of the scroll viewport
+    const scrollRect = notationScroll.getBoundingClientRect();
+    const cellRect = headerCell.getBoundingClientRect();
+    const cellLeft = cellRect.left - scrollRect.left + notationScroll.scrollLeft;
+    const cellRight = cellLeft + cellRect.width;
+    const viewLeft = notationScroll.scrollLeft + labelWidth;
+    const viewRight = notationScroll.scrollLeft + notationScroll.clientWidth;
+    if (cellLeft < viewLeft || cellRight > viewRight) {
+      notationScroll.scrollLeft = Math.max(0, cellLeft - labelWidth - 10);
+    }
+  }
+
+  function notationPlayStep() {
+    notationFigure.applyPose(poseForColumn(notationPlayCol), true);
+    notationFigure.applyFeet(feetForColumn(notationPlayCol));
+    notationSideFigure.applyPose(sideForColumn(notationPlayCol));
+    notationPreviewLabel.textContent = 'プレビュー：' + (notationPlayCol + 1) + '拍目（再生中）';
+    highlightNotationCol(notationPlayCol);
+    click(notationPlayCol === notationPlayRangeStart ? 660 : 440);
+    notationPlayCol++;
+    if (notationPlayCol > notationPlayRangeEnd) notationPlayCol = notationPlayRangeStart;
+  }
+
+  function startNotationPlay() {
+    const start = parseInt(notationPlayStart.value, 10) - 1;
+    const end = parseInt(notationPlayEnd.value, 10) - 1;
+    if (end < start) {
+      notationRegNote.textContent = '再生範囲の終わりは開始より後にしてください。';
+      return;
+    }
+    ensureAudio();
+    notationPlayRangeStart = start;
+    notationPlayRangeEnd = end;
+    notationPlayCol = start;
+    notationPlaying = true;
+    notationPlayBtn.textContent = '■ 停止';
+    notationPlayStep();
+    notationPlayTimer = setInterval(notationPlayStep, (60 / bpm) * 1000);
+  }
+
+  function stopNotationPlay() {
+    notationPlaying = false;
+    if (notationPlayTimer) clearInterval(notationPlayTimer);
+    notationPlayTimer = null;
+    notationPlayBtn.textContent = '▶ 再生';
+    notationGridEl.querySelectorAll('.playing-col').forEach(el => el.classList.remove('playing-col'));
+    refreshNotationPreview();
+  }
+
+  notationPlayBtn.addEventListener('click', () => { notationPlaying ? stopNotationPlay() : startNotationPlay(); });
+
+  function posGuideSvg() {
+    let guide = '';
+    Object.values(POS_COORD).forEach(([x, y]) => { guide += '<circle cx="' + x + '" cy="' + y + '" r="1.3" fill="var(--panel-line)"></circle>'; });
+    return guide;
+  }
+
+  function footCellSvg(value, isLeftRow) {
+    const color = isLeftRow ? 'var(--pink)' : 'var(--yellow)';
+    let marker = '';
+    if (value) {
+      const [x, y] = POS_COORD[value.pos] || POS_COORD.C;
+      marker = value.up
+        ? '<circle cx="' + x + '" cy="' + y + '" r="4.5" fill="none" stroke="' + color + '" stroke-width="2"></circle>'
+        : '<circle cx="' + x + '" cy="' + y + '" r="4.5" fill="' + color + '"></circle>';
+    }
+    return '<svg viewBox="0 0 30 30" width="26" height="26">' + posGuideSvg() + marker + '</svg>';
+  }
+
+  function handCellSvg(value, isLeftRow) {
+    const color = isLeftRow ? 'var(--pink)' : 'var(--yellow)';
+    let marker = '';
+    if (value) {
+      const [x, y] = POS_COORD[value.pos] || POS_COORD.C;
+      marker = '<circle cx="' + x + '" cy="' + y + '" r="4.5" fill="' + color + '"></circle>';
+    }
+    return '<svg viewBox="0 0 30 30" width="26" height="26">' + posGuideSvg() + marker + '</svg>';
+  }
+
+  let notationCounts = 8;
+  let notationCells = {}; // `${rowKey}-${col}` -> text
+  let notationActive = null; // { rowKey, col }
+
+  function notationKey(rowKey, col) { return rowKey + '-' + col; }
+  function rowDefFor(rowKey) { return NOTATION_ROWS.find(r => r.key === rowKey); }
+
+  function renderNotationGrid() {
+    notationCountsDisplay.textContent = notationCounts;
+    notationGridEl.innerHTML = '';
+
+    const headerRow = document.createElement('div');
+    headerRow.className = 'notation-row header';
+    const corner = document.createElement('div');
+    corner.className = 'notation-label';
+    corner.textContent = 'カウント';
+    headerRow.appendChild(corner);
+    for (let c = 0; c < notationCounts; c++) {
+      const numEl = document.createElement('div');
+      numEl.className = 'notation-col-num' + ((c + 1) % 4 === 0 ? ' measure-end' : '');
+      numEl.textContent = c + 1;
+      numEl.dataset.col = c;
+      headerRow.appendChild(numEl);
+    }
+    notationGridEl.appendChild(headerRow);
+
+    NOTATION_ROWS.forEach(rowDef => {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'notation-row';
+      const labelEl = document.createElement('div');
+      labelEl.className = 'notation-label';
+      labelEl.textContent = rowDef.label;
+      rowEl.appendChild(labelEl);
+      for (let c = 0; c < notationCounts; c++) {
+        const val = notationCells[notationKey(rowDef.key, c)];
+        const cellEl = document.createElement('div');
+        const isPosRow = isFootRow(rowDef.key) || isHandRow(rowDef.key);
+        const filled = isPosRow ? (val !== undefined) : !!val;
+        cellEl.className = 'notation-cell' + (filled ? ' filled' : '') + ((c + 1) % 4 === 0 ? ' measure-end' : '') +
+          (notationActive && notationActive.rowKey === rowDef.key && notationActive.col === c ? ' active' : '');
+        cellEl.dataset.col = c;
+        if (isFootRow(rowDef.key)) {
+          cellEl.innerHTML = footCellSvg(val, rowDef.key === 'lFoot');
+        } else if (isHandRow(rowDef.key)) {
+          cellEl.innerHTML = handCellSvg(val, rowDef.key === 'lHand');
+        } else {
+          cellEl.textContent = val || '';
+        }
+        cellEl.addEventListener('click', () => selectNotationCell(rowDef.key, c));
+        rowEl.appendChild(cellEl);
+      }
+      notationGridEl.appendChild(rowEl);
+    });
+  }
+
+  function selectNotationCell(rowKey, col) {
+    if (notationPlaying) stopNotationPlay();
+    notationActive = { rowKey, col };
+    const rowDef = rowDefFor(rowKey);
+    notationEditorLabel.textContent = rowDef.label + ' / ' + (col + 1) + '拍目';
+    notationPalette.innerHTML = '';
+
+    if (isFootRow(rowKey)) {
+      notationTextInput.style.display = 'none';
+      const current = notationCells[notationKey(rowKey, col)];
+
+      const grid = document.createElement('div');
+      grid.className = 'notation-foot-grid';
+      POS_GRID.flat().forEach(posKey => {
+        const btn = document.createElement('button');
+        btn.className = 'notation-foot-btn' + (current && current.pos === posKey ? ' active' : '');
+        btn.textContent = FOOT_POS_LABEL[posKey];
+        btn.addEventListener('click', () => setNotationFootPos(posKey));
+        grid.appendChild(btn);
+      });
+      notationPalette.appendChild(grid);
+
+      const liftBtn = document.createElement('button');
+      liftBtn.className = 'notation-chip' + (current && current.up ? ' active-lift' : '');
+      liftBtn.textContent = current && current.up ? '浮いている（タップで着地に）' : '着地（タップで浮かせる）';
+      liftBtn.addEventListener('click', toggleNotationFootUp);
+      notationPalette.appendChild(liftBtn);
+
+      const clearChip = document.createElement('button');
+      clearChip.className = 'notation-chip clear';
+      clearChip.textContent = '✕ クリア';
+      clearChip.addEventListener('click', clearNotationFoot);
+      notationPalette.appendChild(clearChip);
+    } else if (isHandRow(rowKey)) {
+      notationTextInput.style.display = 'none';
+      const current = notationCells[notationKey(rowKey, col)];
+
+      const grid = document.createElement('div');
+      grid.className = 'notation-foot-grid';
+      POS_GRID.flat().forEach(posKey => {
+        const btn = document.createElement('button');
+        btn.className = 'notation-foot-btn' + (current && current.pos === posKey ? ' active' : '');
+        btn.textContent = HAND_POS_LABEL[posKey];
+        btn.addEventListener('click', () => setNotationHandPos(posKey));
+        grid.appendChild(btn);
+      });
+      notationPalette.appendChild(grid);
+
+      const wristRow = document.createElement('div');
+      wristRow.className = 'rhythm-type-row';
+      ['straight', 'natural', 'reverse', 'folded'].forEach(w => {
+        const btn = document.createElement('button');
+        const activeWrist = (current && current.wrist) || 'natural';
+        btn.className = 'rhythm-type-btn' + (activeWrist === w ? ' active' : '');
+        btn.textContent = WRIST_LABEL[w];
+        btn.addEventListener('click', () => setNotationHandWrist(w));
+        wristRow.appendChild(btn);
+      });
+      notationPalette.appendChild(wristRow);
+
+      const depthRow = document.createElement('div');
+      depthRow.className = 'rhythm-type-row';
+      ['front', 'neutral', 'back'].forEach(d => {
+        const btn = document.createElement('button');
+        const activeDepth = (current && current.depth) || 'neutral';
+        btn.className = 'rhythm-type-btn' + (activeDepth === d ? ' active' : '');
+        btn.textContent = DEPTH_LABEL[d];
+        btn.addEventListener('click', () => setNotationHandDepth(d));
+        depthRow.appendChild(btn);
+      });
+      notationPalette.appendChild(depthRow);
+
+      const clearChip = document.createElement('button');
+      clearChip.className = 'notation-chip clear';
+      clearChip.textContent = '✕ クリア';
+      clearChip.addEventListener('click', clearNotationHand);
+      notationPalette.appendChild(clearChip);
+    } else {
+      notationTextInput.style.display = '';
+      rowDef.palette.forEach(word => {
+        const chip = document.createElement('button');
+        chip.className = 'notation-chip';
+        chip.textContent = word;
+        chip.addEventListener('click', () => {
+          if (rowKey === 'move') applyTechniqueToNotation(word, col);
+          else setNotationCell(word, true);
+        });
+        notationPalette.appendChild(chip);
+      });
+      const clearChip = document.createElement('button');
+      clearChip.className = 'notation-chip clear';
+      clearChip.textContent = '✕ クリア';
+      clearChip.addEventListener('click', () => setNotationCell('', false));
+      notationPalette.appendChild(clearChip);
+      notationTextInput.value = notationCells[notationKey(rowKey, col)] || '';
+    }
+    renderNotationGrid();
+    refreshNotationPreview();
+  }
+
+  function setNotationCell(value, advance) {
+    if (!notationActive) return;
+    const key = notationKey(notationActive.rowKey, notationActive.col);
+    if (value) notationCells[key] = value; else delete notationCells[key];
+    if (advance && notationActive.col < notationCounts - 1) {
+      selectNotationCell(notationActive.rowKey, notationActive.col + 1);
+    } else {
+      notationTextInput.value = value;
+      renderNotationGrid();
+      refreshNotationPreview();
+    }
+  }
+
+  function setNotationFootPos(pos) {
+    if (!notationActive) return;
+    const key = notationKey(notationActive.rowKey, notationActive.col);
+    const prev = notationCells[key] || { pos: 'C', up: false };
+    notationCells[key] = { pos: pos, up: prev.up };
+    if (notationActive.col < notationCounts - 1) {
+      selectNotationCell(notationActive.rowKey, notationActive.col + 1);
+    } else {
+      selectNotationCell(notationActive.rowKey, notationActive.col);
+    }
+  }
+
+  function toggleNotationFootUp() {
+    if (!notationActive) return;
+    const key = notationKey(notationActive.rowKey, notationActive.col);
+    const prev = notationCells[key] || { pos: 'C', up: false };
+    notationCells[key] = { pos: prev.pos, up: !prev.up };
+    selectNotationCell(notationActive.rowKey, notationActive.col);
+  }
+
+  function clearNotationFoot() {
+    if (!notationActive) return;
+    delete notationCells[notationKey(notationActive.rowKey, notationActive.col)];
+    selectNotationCell(notationActive.rowKey, notationActive.col);
+  }
+
+  function setNotationHandPos(pos) {
+    if (!notationActive) return;
+    const key = notationKey(notationActive.rowKey, notationActive.col);
+    const prev = notationCells[key] || { pos: 'C', wrist: 'natural', depth: 'neutral' };
+    notationCells[key] = { pos: pos, wrist: prev.wrist, depth: prev.depth };
+    if (notationActive.col < notationCounts - 1) {
+      selectNotationCell(notationActive.rowKey, notationActive.col + 1);
+    } else {
+      selectNotationCell(notationActive.rowKey, notationActive.col);
+    }
+  }
+
+  function setNotationHandWrist(wrist) {
+    if (!notationActive) return;
+    const key = notationKey(notationActive.rowKey, notationActive.col);
+    const prev = notationCells[key] || { pos: 'C', wrist: 'natural', depth: 'neutral' };
+    notationCells[key] = { pos: prev.pos, wrist: wrist, depth: prev.depth };
+    selectNotationCell(notationActive.rowKey, notationActive.col);
+  }
+
+  function setNotationHandDepth(depth) {
+    if (!notationActive) return;
+    const key = notationKey(notationActive.rowKey, notationActive.col);
+    const prev = notationCells[key] || { pos: 'C', wrist: 'natural', depth: 'neutral' };
+    notationCells[key] = { pos: prev.pos, wrist: prev.wrist, depth: depth };
+    selectNotationCell(notationActive.rowKey, notationActive.col);
+  }
+
+  function clearNotationHand() {
+    if (!notationActive) return;
+    delete notationCells[notationKey(notationActive.rowKey, notationActive.col)];
+    selectNotationCell(notationActive.rowKey, notationActive.col);
+  }
+
+  notationTextInput.addEventListener('input', () => {
+    if (!notationActive || isFootRow(notationActive.rowKey) || isHandRow(notationActive.rowKey)) return;
+    const key = notationKey(notationActive.rowKey, notationActive.col);
+    const v = notationTextInput.value;
+    if (v) notationCells[key] = v; else delete notationCells[key];
+    renderNotationGrid();
+  });
+
+  notationCountsPlus.addEventListener('click', () => {
+    notationCounts = Math.min(64, notationCounts + 4);
+    renderNotationGrid();
+    renderNotationRegisterSelects();
+  });
+  notationCountsMinus.addEventListener('click', () => {
+    const newCounts = Math.max(4, notationCounts - 4);
+    for (const key in notationCells) {
+      const col = parseInt(key.split('-')[1], 10);
+      if (col >= newCounts) delete notationCells[key];
+    }
+    if (notationActive && notationActive.col >= newCounts) notationActive = null;
+    notationCounts = newCounts;
+    renderNotationGrid();
+    renderNotationRegisterSelects();
+  });
+
+  const notationRegStart = document.getElementById('notationRegStart');
+  const notationRegEnd = document.getElementById('notationRegEnd');
+  const notationRegName = document.getElementById('notationRegName');
+  const notationRegBtn = document.getElementById('notationRegBtn');
+  const notationCustomList = document.getElementById('notationCustomList');
+  const notationLibrarySelect = document.getElementById('notationLibrarySelect');
+  const notationLibraryLoadBtn = document.getElementById('notationLibraryLoadBtn');
+  const notationCustomListInner = document.getElementById('notationCustomListInner');
+
+  function renderNotationRegisterSelects() {
+    const prevStart = notationRegStart.value;
+    const prevEnd = notationRegEnd.value;
+    const prevPlayStart = notationPlayStart.value;
+    const prevPlayEnd = notationPlayEnd.value;
+    notationRegStart.innerHTML = '';
+    notationRegEnd.innerHTML = '';
+    notationPlayStart.innerHTML = '';
+    notationPlayEnd.innerHTML = '';
+    for (let c = 1; c <= notationCounts; c++) {
+      const o1 = document.createElement('option'); o1.value = c; o1.textContent = c + '拍目';
+      notationRegStart.appendChild(o1);
+      const o2 = document.createElement('option'); o2.value = c; o2.textContent = c + '拍目';
+      notationRegEnd.appendChild(o2);
+      const o3 = document.createElement('option'); o3.value = c; o3.textContent = c + '拍目';
+      notationPlayStart.appendChild(o3);
+      const o4 = document.createElement('option'); o4.value = c; o4.textContent = c + '拍目';
+      notationPlayEnd.appendChild(o4);
+    }
+    notationRegStart.value = (prevStart && prevStart <= notationCounts) ? prevStart : 1;
+    notationRegEnd.value = (prevEnd && prevEnd <= notationCounts) ? prevEnd : Math.min(8, notationCounts);
+    notationPlayStart.value = (prevPlayStart && prevPlayStart <= notationCounts) ? prevPlayStart : 1;
+    notationPlayEnd.value = (prevPlayEnd && prevPlayEnd <= notationCounts) ? prevPlayEnd : Math.min(8, notationCounts);
+  }
+
+  let editingCustomIndex = -1;
+
+  function snapshotSourceCells(start, end) {
+    const rel = {};
+    NOTATION_ROWS.forEach(rowDef => {
+      for (let c = start; c <= end; c++) {
+        const val = notationCells[notationKey(rowDef.key, c)];
+        if (val !== undefined) rel[notationKey(rowDef.key, c - start)] = val;
+      }
+    });
+    return rel;
+  }
+
+  notationRegBtn.addEventListener('click', () => {
+    const start = parseInt(notationRegStart.value, 10) - 1;
+    const end = parseInt(notationRegEnd.value, 10) - 1;
+    const name = notationRegName.value.trim();
+    if (!name) {
+      notationRegNote.textContent = '技の名前を入力してください。';
+      return;
+    }
+    if (end < start) {
+      notationRegNote.textContent = '終わりのカウントは開始より後にしてください。';
+      return;
+    }
+    const cues = [], poses = [], feet = [], sidePoses = [];
+    for (let c = start; c <= end; c++) {
+      cues.push(cueForColumn(c));
+      poses.push(poseForColumn(c));
+      feet.push(feetForColumn(c));
+      sidePoses.push(sideForColumn(c));
+    }
+    const entry = {
+      name: name,
+      desc: '「技を作る」から作成（' + cues.length + '拍）',
+      tip: '',
+      cues: cues, poses: poses, feet: feet, sidePoses: sidePoses,
+      sourceCells: snapshotSourceCells(start, end),
+      sourceLen: end - start + 1
+    };
+    if (editingCustomIndex >= 0 && CUSTOM_MOVES[editingCustomIndex]) {
+      CUSTOM_MOVES[editingCustomIndex] = entry;
+      notationRegNote.textContent = '「' + name + '」を更新しました。';
+      editingCustomIndex = -1;
+      notationRegBtn.textContent = '登録';
+    } else {
+      CUSTOM_MOVES.push(entry);
+      notationRegNote.textContent = '「' + name + '」を技ライブラリに追加しました。「振り付けを作る」画面から使えます。';
+    }
+    renderLibraryGrid();
+    renderNotationCustomList();
+    notationRegName.value = '';
+  });
+
+  function loadCustomMoveForEdit(idx) {
+    const mv = CUSTOM_MOVES[idx];
+    if (!mv) return;
+    editingCustomIndex = idx;
+    if (notationCounts < mv.sourceLen) {
+      notationCounts = Math.ceil(mv.sourceLen / 4) * 4;
+    }
+    notationCells = {};
+    Object.keys(mv.sourceCells).forEach(key => { notationCells[key] = mv.sourceCells[key]; });
+    notationActive = null;
+    renderNotationGrid();
+    renderNotationRegisterSelects();
+    notationRegStart.value = 1;
+    notationRegEnd.value = mv.sourceLen;
+    notationRegName.value = mv.name;
+    notationRegBtn.textContent = '更新';
+    notationRegNote.textContent = '「' + mv.name + '」を読み込みました。編集して「更新」を押すと上書きされます。';
+    refreshNotationPreview();
+  }
+
+  MOVE_LIBRARY.forEach(mv => {
+    const opt = document.createElement('option');
+    opt.value = mv.name;
+    opt.textContent = mv.name;
+    notationLibrarySelect.appendChild(opt);
+  });
+
+  notationLibraryLoadBtn.addEventListener('click', () => {
+    const mv = MOVE_LIBRARY.find(m => m.name === notationLibrarySelect.value);
+    if (!mv) return;
+    editingCustomIndex = -1; // loading a library move always creates a new custom move on register
+    const len = mv.poses.length;
+    notationCells = {};
+    if (notationCounts < len) notationCounts = Math.ceil(len / 4) * 4;
+    fillFromLibraryMove(mv, 0);
+    for (let i = 0; i < len; i++) notationCells[notationKey('move', i)] = mv.name;
+    notationActive = null;
+    renderNotationGrid();
+    renderNotationRegisterSelects();
+    notationRegStart.value = 1;
+    notationRegEnd.value = len;
+    notationRegName.value = mv.name + '（編集）';
+    notationRegBtn.textContent = '登録';
+    notationRegNote.textContent = '「' + mv.name + '」の近似データを読み込みました。棒人形の角度を9方向に丸めているため元とは多少違います。調整して登録すると、新しい自分の技として追加されます（元の技は変わりません）。';
+    refreshNotationPreview();
+  });
+
+  function deleteCustomMove(idx) {
+    CUSTOM_MOVES.splice(idx, 1);
+    if (editingCustomIndex === idx) {
+      editingCustomIndex = -1;
+      notationRegName.value = '';
+      notationRegBtn.textContent = '登録';
+      notationRegNote.textContent = '登録すると「振り付けを作る」画面の技ライブラリに追加されます。';
+    } else if (editingCustomIndex > idx) {
+      editingCustomIndex--; // shift to match the spliced array
+    }
+    renderLibraryGrid();
+    renderNotationCustomList();
+  }
+
+  function renderNotationCustomList() {
+    notationCustomListInner.innerHTML = '';
+    notationCustomList.style.display = CUSTOM_MOVES.length ? '' : 'none';
+    CUSTOM_MOVES.forEach((mv, idx) => {
+      const row = document.createElement('div');
+      row.className = 'notation-register-row';
+      const label = document.createElement('div');
+      label.className = 'seq-name';
+      label.textContent = mv.name;
+      const editBtn = document.createElement('button');
+      editBtn.className = 'notation-register-btn btn btn-tap';
+      editBtn.textContent = '編集';
+      editBtn.addEventListener('click', () => loadCustomMoveForEdit(idx));
+      const delBtn = document.createElement('button');
+      delBtn.className = 'seq-btn';
+      delBtn.textContent = '×';
+      delBtn.title = '削除';
+      delBtn.addEventListener('click', () => deleteCustomMove(idx));
+      row.append(label, editBtn, delBtn);
+      notationCustomListInner.appendChild(row);
+    });
+  }
+
+  // ---------- init ----------
+  buildCountRow();
+  applyModeText();
+  setBpm(bpm);
+  renderSequence();
+  renderChoreoIdle();
+  renderNotationGrid();
+  renderNotationRegisterSelects();
+  renderNotationCustomList();
+  refreshNotationPreview();
+})();
+</script>
+
+</body>
+</html>
